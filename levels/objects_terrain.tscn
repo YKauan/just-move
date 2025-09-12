@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8k00mbcbfpvj"]
+
+[ext_resource type="Texture2D" uid="uid://daxy1vkjcq2ny" path="res://assets/objects.png" id="1_er1wp"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_lk8pt"]
+resource_name = "objects"
+texture = ExtResource("1_er1wp")
+0:5/size_in_atlas = Vector2i(3, 4)
+0:5/0 = 0
+0:5/0/texture_origin = Vector2i(0, 18)
+0:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[sub_resource type="TileSet" id="TileSet_hbppn"]
+physics_layer_0/collision_layer = 1
+sources/0 = SubResource("TileSetAtlasSource_lk8pt")
+
+[node name="ObjectsTerrain" type="TileMap"]
+y_sort_enabled = true
+tile_set = SubResource("TileSet_hbppn")
+format = 2
+layer_0/y_sort_enabled = true
