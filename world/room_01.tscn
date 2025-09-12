@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://d14hfr24h6ig8"]
+
+[node name="Room01" type="Node2D"]
+
+[node name="SpawnPoint1" type="Marker2D" parent="."]
+position = Vector2(281, 159)
+
+[node name="SpawnPoint2" type="Marker2D" parent="."]
+position = Vector2(281, 24)

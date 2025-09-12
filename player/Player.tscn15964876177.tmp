@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://bctbgfd13rw4t"]
+
+[ext_resource type="Script" uid="uid://mnosotewq0r8" path="res://player/player.gd" id="1_ulp21"]
+[ext_resource type="Texture2D" uid="uid://bxwdnkg464aq5" path="res://assets/player/player.png" id="2_3c3w1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3c3w1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ulp21"]
+
+[node name="Player" type="CharacterBody2D"]
+collision_mask = 2
+script = ExtResource("1_ulp21")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_3c3w1")
+
+[node name="GunPivot" type="Node2D" parent="."]
+position = Vector2(12, 1)
+
+[node name="FireRateTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DashTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="OutOfCombatTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="MeleeHitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
+position = Vector2(21, 0)
+shape = SubResource("RectangleShape2D_ulp21")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.0198523, 0.0194483)
+texture = ExtResource("2_3c3w1")

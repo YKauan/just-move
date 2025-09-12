@@ -1,0 +1,87 @@
+# ui/game_ui.gd
+extends CanvasLayer
+
+@onready var health_label = $HealthLabel
+@onready var stamina_label = $StaminaLabel
+@onready var enemy_counter_label = $EnemyCounterLabel
+@onready var upgrade_screen = $UpgradeScreen
+
+# NOVO: Pegamos referências para todos os botões
+@onready var upgrade_button_1 = $UpgradeScreen/UpgradeButton1
+@onready var upgrade_button_2 = $UpgradeScreen/UpgradeButton2
+@onready var upgrade_button_3 = $UpgradeScreen/UpgradeButton3
+
+@onready var pause_menu = $PauseMenu
+@onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
+@onready var main_menu_button = $PauseMenu/VBoxContainer/MainMenuButton
+
+var world_node: Node
+# NOVO: Variável para guardar os upgrades oferecidos
+var current_upgrades: Array
+
+func _ready() -> void:
+	upgrade_screen.hide()
+	await get_tree().process_frame
+	world_node = get_tree().get_first_node_in_group("world_manager")
+	
+	resume_button.pressed.connect(_on_resume_button_pressed)
+	main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+
+	# NOVO: Conectamos todos os botões a uma única função, mas usando 'bind' para saber qual foi clicado.
+	upgrade_button_1.pressed.connect(_on_upgrade_selected.bind(0))
+	upgrade_button_2.pressed.connect(_on_upgrade_selected.bind(1))
+	upgrade_button_3.pressed.connect(_on_upgrade_selected.bind(2))
+
+func connect_player_signals(player_node: Node) -> void:
+	if not player_node: return
+	player_node.health_updated.connect(update_health_label)
+	if player_node.has_signal("stamina_updated"):
+		player_node.stamina_updated.connect(update_stamina_label)
+
+func update_health_label(current_health: int) -> void:
+	health_label.text = "Vida: %d" % current_health
+
+func update_stamina_label(current_stamina: int, max_stamina: int) -> void:
+	stamina_label.text = "Vigor: %d / %d" % [current_stamina, max_stamina]
+	
+func update_enemy_counter(count: int) -> void:
+	enemy_counter_label.text = "Inimigos restantes: %d" % count
+	
+# ALTERADO: A função agora recebe os upgrades do World
+func show_upgrade_screen(upgrades: Array) -> void:
+	# Guarda os upgrades recebidos
+	current_upgrades = upgrades
+	
+	# Configura o texto de cada botão
+	if upgrades.size() > 0:
+		upgrade_button_1.text = upgrades[0].text
+	if upgrades.size() > 1:
+		upgrade_button_2.text = upgrades[1].text
+	if upgrades.size() > 2:
+		upgrade_button_3.text = upgrades[2].text
+	
+	upgrade_screen.show()
+
+# ALTERADO: Função única que lida com a escolha de qualquer upgrade
+func _on_upgrade_selected(index: int) -> void:
+	if world_node and not current_upgrades.is_empty():
+		# Pega o upgrade escolhido da lista
+		var chosen_upgrade = current_upgrades[index]
+		
+		# Chama a nova função no World, passando os DOIS argumentos
+		world_node.apply_player_upgrade(chosen_upgrade.type, chosen_upgrade.value)
+		
+	# Apenas esconde a tela. O World agora é quem carrega a próxima sala.
+	upgrade_screen.hide()
+
+
+func toggle_pause_menu(is_paused: bool) -> void:
+	pause_menu.visible = is_paused
+
+func _on_resume_button_pressed() -> void:
+	if world_node:
+		world_node.toggle_pause()
+
+func _on_main_menu_button_pressed() -> void:
+	get_tree().paused = false
+	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
