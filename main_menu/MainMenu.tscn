@@ -1,11 +1,23 @@
-[gd_scene load_steps=2 format=3 uid="uid://clfwysvkn50bn"]
+[gd_scene load_steps=6 format=3 uid="uid://clfwysvkn50bn"]
 
 [ext_resource type="Script" uid="uid://s5qpgss38ghf" path="res://main_menu/main_menu.gd" id="1_pcyt4"]
+[ext_resource type="FontFile" uid="uid://cru716ds68uln" path="res://assets/fontes/BrunoAceSCRegular.ttf" id="2_4hec4"]
+[ext_resource type="Texture2D" uid="uid://q6i0xook764i" path="res://assets/splash_art/MainMenu (2).png" id="2_ff7fd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4hec4"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ff7fd"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_pcyt4")
+
+[node name="MainMenu(2)" type="Sprite2D" parent="."]
+position = Vector2(160, 89)
+texture = ExtResource("2_ff7fd")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -14,7 +26,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.491342, 0.31343, 0.887596, 1)
+color = Color(0.444723, 0.299043, 0.965016, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -23,21 +35,23 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 112.0
-offset_top = 45.0
-offset_right = 206.0
-offset_bottom = 138.0
+offset_left = 5.0
+offset_top = 59.0
+offset_right = 150.0
+offset_bottom = 152.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-text = "Main Menu"
-
 [node name="StartButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = "Iniciar Jogo"
+theme_override_fonts/font = ExtResource("2_4hec4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4hec4")
+text = "INICIAR JOGO"
+alignment = 0
 
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = "Sair"
+theme_override_fonts/font = ExtResource("2_4hec4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ff7fd")
+text = "SAIR"
+alignment = 0

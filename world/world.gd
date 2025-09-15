@@ -16,22 +16,23 @@ var current_room_index = -1
 var enemies_to_spawn = 5
 var current_enemies = 0
 var player_instance: Node
-
-# Upgrades disponiveis
-var all_possible_upgrades = [
-	{"type": "max_health", "value": 50, "text": "Aumentar Vida Máxima (+50)"},
-	{"type": "move_speed", "value": 40, "text": "Aumentar Velocidade (+40)"},
-	{"type": "stamina_regen", "value": 10, "text": "Regeneração de Vigor (+10/s)"}
-]
+var all_possible_upgrades: Array = []
 
 func _ready() -> void:
+	# Carrega os upgrades contidos no json
+	load_upgrades_from_json()
+	
 	if enemy_scenes.is_empty() or enemy_scenes.size() != enemy_spawn_weights.size():
-		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e não estarem vazios.")
+		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e nao estarem vazios.")
 		get_tree().quit()
 
 	player_instance = player_scene.instantiate()
 	player_instance.global_position = Vector2(100, 100)
 	add_child(player_instance)
+	
+	if player_instance: # Verifica se player_instance e valido
+		game_ui.update_health_label(player_instance.current_health)
+		game_ui.update_stamina_label(player_instance.current_stamina, player_instance.max_stamina)
 	
 	if game_ui.has_method("connect_player_signals"):
 		game_ui.connect_player_signals(player_instance)
@@ -41,7 +42,41 @@ func _ready() -> void:
 	player_instance.died.connect(_on_player_died, Node.CONNECT_DEFERRED)
 	add_to_group("world_manager")
 	call_deferred("load_next_room")
+
+# Funcao dedicada para carregar e validar o JSON de upgrades
+func load_upgrades_from_json() -> void:
+	var path = "res://assets/upgrades/upgrades.json"
 	
+	if not FileAccess.file_exists(path):
+		printerr("ERRO FATAL: Arquivo de upgrades nao encontrado em ", path)
+		get_tree().quit()
+		return
+
+	# Acessando o arquivo
+	var file = FileAccess.open(path, FileAccess.READ)
+	var content = file.get_as_text()
+	file.close()
+
+	# Faz o parse do Json
+	var json = JSON.new()
+	var error = json.parse(content)
+	
+	# Verifica se deu certo o parse do JSON
+	if error != OK:
+		printerr("ERRO FATAL: Falha ao parsear o arquivo JSON de upgrades. Erro: ", json.get_error_message(), " na linha ", json.get_error_line())
+		get_tree().quit()
+		return
+		
+	var data = json.get_data()
+	
+	# 
+	if typeof(data) == TYPE_ARRAY:
+		all_possible_upgrades = data
+		print("Upgrades carregados com sucesso do JSON!")
+	else:
+		printerr("ERRO FATAL: O arquivo JSON de upgrades nao contem um Array na raiz.")
+		get_tree().quit()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		toggle_pause()
@@ -102,6 +137,11 @@ func _on_enemy_died() -> void:
 
 # Pega os upgrades de forma aleatoria
 func get_random_upgrades() -> Array:
+	# --- CORRIGIDO: Agora verifica se os upgrades foram carregados ---
+	if all_possible_upgrades.is_empty():
+		printerr("Aviso: Tentando obter upgrades, mas a lista está vazia. O JSON foi carregado corretamente?")
+		return [] # Retorna um array vazio para evitar crash
+		
 	all_possible_upgrades.shuffle()
 	return all_possible_upgrades.slice(0, 3)
 

@@ -8,9 +8,9 @@ extends CanvasLayer
 @onready var upgrade_screen = $UpgradeScreen
 
 # Pego a referencia dos botoes
-@onready var upgrade_button_1 = $UpgradeScreen/UpgradeButton1
-@onready var upgrade_button_2 = $UpgradeScreen/UpgradeButton2
-@onready var upgrade_button_3 = $UpgradeScreen/UpgradeButton3
+@onready var upgrade_button_1 = $UpgradeScreen/VBoxContainer/UpgradeButton1
+@onready var upgrade_button_2 = $UpgradeScreen/VBoxContainer/UpgradeButton2
+@onready var upgrade_button_3 = $UpgradeScreen/VBoxContainer/UpgradeButton3
 
 # Pego as referencias do menu
 @onready var pause_menu = $PauseMenu

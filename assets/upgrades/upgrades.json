@@ -1,0 +1,17 @@
+[
+	{
+		"type":"max_health",
+		"value":10,
+		"text":"Aumentar Vida Máxima (+10)"
+	},
+	{
+		"type":"move_speed",
+		"value":5,
+		"text":"Aumentar Velocidade (+5)"
+	},
+	{
+		"type":"stamina_regen",
+		"value":10,
+		"text":"Regeneração de Vigor (+10/s)"
+	}
+]

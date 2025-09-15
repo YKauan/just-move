@@ -1,4 +1,3 @@
-# player/player.gd
 extends CharacterBody2D
 
 var _state_machine
@@ -15,10 +14,10 @@ signal died
 # Variaveis do player
 @export_category("Variables Player")
 @export var speed: float = 64.0
-@export var max_health: int = 200
+@export var max_health: float = 200.0
 @export var _acceleration: float = 0.4
 @export var _friction: float = 0.8
-var current_health: int
+var current_health: float
 var is_dead: bool = false
 
 # Variaveis de dash / estamina

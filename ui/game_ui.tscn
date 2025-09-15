@@ -1,6 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3awkhhipfn4c"]
+[gd_scene load_steps=7 format=3 uid="uid://b3awkhhipfn4c"]
 
 [ext_resource type="Script" uid="uid://qagqdts4ggad" path="res://ui/game_ui.gd" id="1_dcmab"]
+[ext_resource type="FontFile" uid="uid://cru716ds68uln" path="res://assets/fontes/BrunoAceSCRegular.ttf" id="2_w46tp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w46tp"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7hrjk"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pylni"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3vkek"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="GameUI" type="CanvasLayer"]
 script = ExtResource("1_dcmab")
@@ -9,10 +22,19 @@ script = ExtResource("1_dcmab")
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -63.0
-offset_right = 40.0
-offset_bottom = -40.0
+offset_left = 2.0
+offset_top = -24.0
+offset_right = 42.0
+offset_bottom = -1.0
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_w46tp")
+
+[node name="StaminaLabel" type="Label" parent="."]
+offset_left = 1.0
+offset_top = 136.0
+offset_right = 87.0
+offset_bottom = 159.0
+theme_override_fonts/font = ExtResource("2_w46tp")
 
 [node name="EnemyCounterLabel" type="Label" parent="."]
 anchors_preset = 5
@@ -22,6 +44,7 @@ offset_left = -0.5
 offset_right = 0.5
 offset_bottom = 23.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
 
 [node name="UpgradeScreen" type="Panel" parent="."]
 process_mode = 3
@@ -37,45 +60,38 @@ offset_right = 20.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_w46tp")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UpgradeScreen"]
 layout_mode = 0
-offset_left = -19.0
-offset_top = -16.0
-offset_right = 21.0
-offset_bottom = 24.0
+offset_left = -122.0
+offset_top = -6.0
+offset_right = 160.0
+offset_bottom = 95.0
+
+[node name="UpgradeButton1" type="Button" parent="UpgradeScreen/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
+text = "Aumentar Vida Máxima (+50)"
+
+[node name="UpgradeButton2" type="Button" parent="UpgradeScreen/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
+text = "Placeholder 1"
+
+[node name="UpgradeButton3" type="Button" parent="UpgradeScreen/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
+text = "Placeholder 2"
 
 [node name="Label" type="Label" parent="UpgradeScreen"]
 layout_mode = 0
-offset_left = -9.0
-offset_top = -170.0
-offset_right = 150.0
-offset_bottom = -147.0
+offset_left = -81.0
+offset_top = -44.0
+offset_right = 123.0
+offset_bottom = -21.0
+theme_override_fonts/font = ExtResource("2_w46tp")
 text = "Escolha um Upgrade"
-
-[node name="UpgradeButton1" type="Button" parent="UpgradeScreen"]
-layout_mode = 0
-offset_left = -23.0
-offset_top = -59.0
-offset_right = 209.0
-offset_bottom = -28.0
-text = "Aumentar Vida Máxima (+50)"
-
-[node name="UpgradeButton2" type="Button" parent="UpgradeScreen"]
-layout_mode = 0
-offset_left = 221.0
-offset_top = -58.0
-offset_right = 334.0
-offset_bottom = -27.0
-text = "Placeholder 1"
-
-[node name="UpgradeButton3" type="Button" parent="UpgradeScreen"]
-layout_mode = 0
-offset_left = -154.0
-offset_top = -59.0
-offset_right = -41.0
-offset_bottom = -28.0
-text = "Placeholder 2"
 
 [node name="PauseMenu" type="Panel" parent="."]
 visible = false
@@ -90,25 +106,28 @@ offset_right = 20.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7hrjk")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu"]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = -135.0
+offset_right = -8.0
+offset_bottom = 66.0
 
 [node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
 process_mode = 3
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_styles/normal = SubResource("StyleBoxFlat_pylni")
 text = "Retornar"
+alignment = 0
 
 [node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
 process_mode = 3
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_styles/normal = SubResource("StyleBoxFlat_3vkek")
 text = "Voltar ao Menu"
+alignment = 0
 
-[node name="StaminaLabel" type="Label" parent="."]
-offset_top = 613.0
-offset_right = 40.0
-offset_bottom = 636.0
-
-[connection signal="pressed" from="UpgradeScreen/UpgradeButton1" to="." method="_on_upgrade_button_1_pressed"]
+[connection signal="pressed" from="UpgradeScreen/VBoxContainer/UpgradeButton1" to="." method="_on_upgrade_button_1_pressed"]
