@@ -30,7 +30,7 @@ var is_dead: bool = false
 var current_stamina: float
 
 # Variaveis de combate e cura
-@export var melee_damage: float = 30.0
+@export var melee_damage: float = 500.0
 var is_dashing: bool = false
 var in_combat: bool = false
 var health_regen_rate: float = 5.0
@@ -60,7 +60,6 @@ func _ready() -> void:
 	
 	dash_timer.timeout.connect(_on_dash_timer_timeout)
 	out_of_combat_timer.timeout.connect(_on_out_of_combat_timer_timeout)
-	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
 
 # Funcao que lida com o movimento do personagem
 func _character_movement() -> void:
