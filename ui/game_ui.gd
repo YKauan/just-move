@@ -1,22 +1,25 @@
 # ui/game_ui.gd
 extends CanvasLayer
 
+# Pego os labels
 @onready var health_label = $HealthLabel
 @onready var stamina_label = $StaminaLabel
 @onready var enemy_counter_label = $EnemyCounterLabel
 @onready var upgrade_screen = $UpgradeScreen
 
-# NOVO: Pegamos referências para todos os botões
+# Pego a referencia dos botoes
 @onready var upgrade_button_1 = $UpgradeScreen/UpgradeButton1
 @onready var upgrade_button_2 = $UpgradeScreen/UpgradeButton2
 @onready var upgrade_button_3 = $UpgradeScreen/UpgradeButton3
 
+# Pego as referencias do menu
 @onready var pause_menu = $PauseMenu
 @onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
 @onready var main_menu_button = $PauseMenu/VBoxContainer/MainMenuButton
 
 var world_node: Node
-# NOVO: Variável para guardar os upgrades oferecidos
+
+# Upgrades a serem oferecidos
 var current_upgrades: Array
 
 func _ready() -> void:
@@ -47,9 +50,8 @@ func update_stamina_label(current_stamina: int, max_stamina: int) -> void:
 func update_enemy_counter(count: int) -> void:
 	enemy_counter_label.text = "Inimigos restantes: %d" % count
 	
-# ALTERADO: A função agora recebe os upgrades do World
+# Funcao para exibir os upgrades
 func show_upgrade_screen(upgrades: Array) -> void:
-	# Guarda os upgrades recebidos
 	current_upgrades = upgrades
 	
 	# Configura o texto de cada botão
@@ -62,10 +64,10 @@ func show_upgrade_screen(upgrades: Array) -> void:
 	
 	upgrade_screen.show()
 
-# ALTERADO: Função única que lida com a escolha de qualquer upgrade
+# Funcao para executar o upgrade selecionado
 func _on_upgrade_selected(index: int) -> void:
 	if world_node and not current_upgrades.is_empty():
-		# Pega o upgrade escolhido da lista
+		# upgrade selecionado
 		var chosen_upgrade = current_upgrades[index]
 		
 		# Chama a nova função no World, passando os DOIS argumentos

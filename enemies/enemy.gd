@@ -1,24 +1,28 @@
-# enemies/enemy.gd
 extends CharacterBody2D
 
+# Sinais
 signal died
 
+@export_category("Variables")
 @export var speed: float = 34.0
 @export var health: int = 30
 @export var damage: int = 10
+@export var dorpChance: float = 0.2
 
 var player: CharacterBody2D = null
-# NOVO: Carregue a cena do coletável aqui, se ainda não o fez.
+
+# Carregua a cena do coletavel de vida
 var health_pack_scene = preload("res://collectibles/HealthPack.tscn") # Verifique se o caminho está correto!
 
-# NOVO: Flag para evitar que a função de morte seja chamada várias vezes
+# Flag para evitar que a funcao de morte seja chamada varias vezes
 var is_dying: bool = false
 
 func _ready() -> void:
 	add_to_group("enemy")
 
 func _physics_process(delta: float) -> void:
-	if is_dying: return # Se estiver morrendo, não faz mais nada
+	# Se estiver morrendo nao nada
+	if is_dying: return 
 
 	player = get_tree().get_first_node_in_group("player")
 	
@@ -32,18 +36,19 @@ func _physics_process(delta: float) -> void:
 			if collision.get_collider().is_in_group("player"):
 				collision.get_collider().take_damage(damage)
 
-# --- FUNÇÃO ALTERADA ---
+# Funcao para o inimigo receber dano
 func take_damage(amount: int) -> void:
-	# Se o inimigo já está morrendo, não recebe mais dano
+	# Se o inimigo ja esta morrendo nao recebe mais dano
 	if is_dying:
 		return
 
 	health -= amount
 	# A condição agora também verifica se ele já não está morrendo
 	if health <= 0 and not is_dying:
-		is_dying = true # Marca que está morrendo para não entrar aqui de novo
-		# Em vez de chamar queue_free() diretamente,
-		# nós adiamos a chamada da nossa nova função die()
+		# Marca que está morrendo para não entrar aqui de novo
+		is_dying = true
+		
+		# Chama a funcao para eliminar um inimigo
 		call_deferred("die")
 
 # --- NOVA FUNÇÃO ---
@@ -53,7 +58,7 @@ func die() -> void:
 	emit_signal("died")
 	
 	# Chance de dropar um item de cura
-	if randf() < 0.2: # 20% de chance
+	if randf() < dorpChance:
 		var pack = health_pack_scene.instantiate()
 		get_tree().get_first_node_in_group("world_manager").add_child(pack)
 		pack.global_position = self.global_position
