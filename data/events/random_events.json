@@ -1,0 +1,12 @@
+[
+	{
+		"id": "controls_inverted",
+		"type": "player_effect",
+		"text": "EVENTO MALUCO: Controles Invertidos!"
+	},
+	{
+		"id": "low_gravity",
+		"type": "player_effect",
+		"text": "EVENTO MALUCO: Gravidade Baixa!"
+	}
+]
