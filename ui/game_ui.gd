@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var stamina_label = $StaminaLabel
 @onready var enemy_counter_label = $EnemyCounterLabel
 @onready var upgrade_screen = $UpgradeScreen
+@onready var event_message_label = $EventMessageLabel
 
 # Pego a referencia dos botoes
 @onready var upgrade_button_1 = $UpgradeScreen/VBoxContainer/UpgradeButton1
@@ -24,6 +25,9 @@ var current_upgrades: Array
 
 func _ready() -> void:
 	upgrade_screen.hide()
+	event_message_label.hide()
+	pause_menu.hide()
+	
 	await get_tree().process_frame
 	world_node = get_tree().get_first_node_in_group("world_manager")
 	
@@ -87,3 +91,10 @@ func _on_resume_button_pressed() -> void:
 func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
+	
+func show_event_message(message: String) -> void:
+	event_message_label.text = message
+	event_message_label.show()
+	
+func hide_event_message() -> void:
+	event_message_label.hide()

@@ -1,4 +1,5 @@
-# world.gd - Código Completo e Atualizado
+# world/world.gd
+
 extends Node2D
 
 # Variaveis do mundo
@@ -25,18 +26,15 @@ extends Node2D
 
 @onready var game_ui = $GameUI
 @onready var spawn_timer = $SpawnTimer
-# O EventCheckTimer pode ser usado se você quiser uma chance de evento mais complexa,
-# mas para "a cada X ondas", ele é implicitamente checado no start_next_wave.
-# @onready var event_check_timer = $EventCheckTimer # Não é mais estritamente necessário
 
 var is_paused: bool = false
-var player_instance: Node
+var player_instance: CharacterBody2D # Tipo específico CharacterBody2D
 var all_possible_upgrades: Array = []
 var all_possible_events: Array = [] # Array para guardar os eventos carregados do JSON
 var current_active_event: Dictionary = {} # Guarda o evento ativo no momento
 
 var current_wave: int = 0
-var next_event_wave: int = 0 # Em qual onda o próximo evento pode acontecer
+var next_event_wave: int = 0
 
 var enemies_to_spawn_this_wave: int = 0
 var enemies_spawned_this_wave: int = 0
@@ -57,7 +55,7 @@ func _ready() -> void:
 	player_instance.global_position = Vector2(100, 100) # Posição inicial
 	add_child(player_instance)
 	
-	# Configura conexões do jogador com a UI
+	# Configura conexoes do jogador com a UI
 	setup_player_connections()
 	
 	# Adiciona o World ao grupo "world_manager" para fácil acesso
@@ -72,20 +70,19 @@ func _ready() -> void:
 # Configura as conexões do jogador com a UI
 func setup_player_connections():
 	if player_instance:
+		# Conecta os sinais diretamente aqui
+		player_instance.health_updated.connect(game_ui.update_health_label)
+		player_instance.stamina_updated.connect(game_ui.update_stamina_label)
+		
+		# Atualiza a UI inicialmente
 		game_ui.update_health_label(player_instance.current_health)
 		game_ui.update_stamina_label(player_instance.current_stamina, player_instance.max_stamina)
-	
-	if game_ui.has_method("connect_player_signals"):
-		game_ui.connect_player_signals(player_instance)
-	else:
-		# Fallback se connect_player_signals não existir na UI
-		player_instance.health_updated.connect(game_ui.update_health_label)
 
 	player_instance.died.connect(_on_player_died, Node.CONNECT_DEFERRED)
 
 # Inicia o jogo, configurando a primeira onda de evento
 func start_game():
-	next_event_wave = randi_range(event_wave_interval_min, event_wave_interval_max) # Define a primeira onda de evento
+	next_event_wave = randi_range(event_wave_interval_min, event_wave_interval_max)
 	print("Próximo evento aleatório agendado para a onda: ", next_event_wave)
 	start_next_wave()
 
@@ -142,7 +139,7 @@ func _on_spawn_timer_timeout():
 	# Instancia, configura e adiciona o inimigo à cena
 	var enemy = enemy_to_instantiate.instantiate()
 	enemy.global_position = spawn_position
-	enemy.died.connect(_on_enemy_died) # Conecta o sinal de morte do inimigo
+	enemy.died.connect(_on_enemy_died)
 	add_child(enemy)
 	
 	# Se houver um evento ativo que afete inimigos, aplica-o ao novo inimigo
@@ -156,51 +153,41 @@ func get_random_spawn_position() -> Vector2:
 	if not is_instance_valid(player_instance):
 		return Vector2.ZERO
 
-	var random_angle = randf() * TAU # Ângulo aleatório em radianos (TAU = 2 * PI)
-	var random_distance = randf_range(spawn_radius_min, spawn_radius_max) # Distância aleatória dentro do raio
+	var random_angle = randf() * TAU
+	var random_distance = randf_range(spawn_radius_min, spawn_radius_max)
 	
 	var offset = Vector2(cos(random_angle), sin(random_angle)) * random_distance
 	
 	return player_instance.global_position + offset
 
-# Chamado quando um inimigo morre
 func _on_enemy_died() -> void:
 	enemies_alive_in_wave -= 1
 	game_ui.update_enemy_counter(enemies_alive_in_wave)
 	
-	# Se todos os inimigos da onda foram derrotados
 	if enemies_alive_in_wave <= 0:
 		print("Onda ", current_wave, " concluída!")
 		
-		# Encerra o evento ativo ANTES de mostrar a tela de upgrade
 		if not current_active_event.is_empty():
 			end_current_event()
 			
-		get_tree().paused = true # Pausa o jogo para a tela de upgrade
-		game_ui.show_upgrade_screen(get_random_upgrades()) # Mostra a tela de upgrades
+		get_tree().paused = true
+		game_ui.show_upgrade_screen(get_random_upgrades())
 
-# Aplica o upgrade escolhido pelo jogador
 func apply_player_upgrade(type: String, value: float):
 	if player_instance:
 		player_instance.apply_upgrade(type, value)
 	
-	# Despausa o jogo e inicia a próxima onda
 	get_tree().paused = false
 	start_next_wave()
 
-# --- FUNÇÕES DE EVENTOS ALEATÓRIOS ---
-
-# Checa se um evento aleatório deve ocorrer nesta onda
 func check_for_random_event() -> void:
 	if all_possible_events.is_empty():
-		return # Não há eventos carregados
+		return
 	
-	# Chance de um evento ocorrer
 	if randf() < event_chance:
 		var chosen_event = all_possible_events.pick_random()
 		apply_random_event(chosen_event)
 		
-	# Define a próxima onda para checar um evento novamente
 	next_event_wave = current_wave + randi_range(event_wave_interval_min, event_wave_interval_max)
 	print("Próximo evento aleatório agendado para a onda: ", next_event_wave)
 
@@ -213,7 +200,7 @@ func apply_random_event(event_data: Dictionary) -> void:
 	current_active_event = event_data # Armazena o evento ativo
 	
 	print("EVENTO ATIVO: ", event_data.get("text", "Evento Desconhecido"))
-	game_ui.show_event_message(event_data.get("text", "Evento Desconhecido")) # Mostra a mensagem na UI
+	game_ui.show_event_message(event_data.get("text", "Evento Desconhecido"))
 	
 	var effect = event_data.get("effect", {})
 	match event_data.get("type"):
@@ -230,7 +217,7 @@ func apply_random_event(event_data: Dictionary) -> void:
 			printerr("Tipo de evento desconhecido: ", event_data.get("type"))
 
 # Aplica efeitos do evento no jogador (requer funções em player.gd)
-func apply_player_event_effect(player_node: Node, effect_data: Dictionary) -> void:
+func apply_player_event_effect(player_node: CharacterBody2D, effect_data: Dictionary) -> void:
 	if not is_instance_valid(player_node): return
 	
 	if effect_data.has("input_modifier"):
@@ -247,10 +234,10 @@ func apply_player_event_effect(player_node: Node, effect_data: Dictionary) -> vo
 		player_node.set_can_melee(effect_data.can_melee)
 
 # Aplica efeitos do evento nos inimigos (requer funções em enemy.gd)
-func apply_enemy_event_effect(enemy_node: Node, effect_data: Dictionary) -> void:
+func apply_enemy_event_effect(enemy_node: CharacterBody2D, effect_data: Dictionary) -> void:
 	if not is_instance_valid(enemy_node): return
 	
-	if effect_data.has("invincible"):
+	if enemy_node.has_method("set_invincible_status") and effect_data.has("invincible"):
 		enemy_node.set_invincible_status(effect_data.invincible)
 
 # Reverte os efeitos do evento ativo
@@ -273,7 +260,7 @@ func end_current_event() -> void:
 	current_active_event = {} # Limpa o evento ativo
 
 # Reverte efeitos do evento no jogador (requer funções em player.gd)
-func revert_player_event_effect(player_node: Node, effect_data: Dictionary) -> void:
+func revert_player_event_effect(player_node: CharacterBody2D, effect_data: Dictionary) -> void:
 	if not is_instance_valid(player_node): return
 	
 	if effect_data.has("input_modifier"):
@@ -290,17 +277,15 @@ func revert_player_event_effect(player_node: Node, effect_data: Dictionary) -> v
 		player_node.set_can_melee(true)
 
 # Reverte efeitos do evento nos inimigos (requer funções em enemy.gd)
-func revert_enemy_event_effect(enemy_node: Node, effect_data: Dictionary) -> void:
+func revert_enemy_event_effect(enemy_node: CharacterBody2D, effect_data: Dictionary) -> void:
 	if not is_instance_valid(enemy_node): return
 	
-	if effect_data.has("invincible"):
+	if enemy_node.has_method("set_invincible_status") and effect_data.has("invincible"):
 		enemy_node.set_invincible_status(false)
 
 
-# --- Funções de Carregamento de JSON ---
-
 func load_upgrades_from_json() -> void:
-	var path = "res://data/upgrades/upgrades.json" # Verifique se o caminho está correto
+	var path = "res://data/upgrades/upgrades.json" # Verifique se o caminho está correto!
 	if not FileAccess.file_exists(path):
 		printerr("ERRO FATAL: Arquivo de upgrades não encontrado em ", path)
 		get_tree().quit()
@@ -321,7 +306,7 @@ func load_upgrades_from_json() -> void:
 		get_tree().quit()
 		
 func load_random_events_from_json() -> void:
-	var path = "res://data/events/random_events.json" # Verifique se o caminho está correto
+	var path = "res://data/events/random_events.json" # Caminho para o seu novo arquivo JSON
 	if not FileAccess.file_exists(path):
 		printerr("ERRO FATAL: Arquivo de eventos aleatórios não encontrado em ", path)
 		get_tree().quit()
@@ -340,8 +325,6 @@ func load_random_events_from_json() -> void:
 	else:
 		printerr("ERRO FATAL: Falha ao parsear o arquivo JSON de eventos aleatórios.")
 		get_tree().quit()
-
-# --- Funções de UI, Input e Outros ---
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):

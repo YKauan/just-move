@@ -130,4 +130,8 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_3vkek")
 text = "Voltar ao Menu"
 alignment = 0
 
+[node name="EventMessageLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
 [connection signal="pressed" from="UpgradeScreen/VBoxContainer/UpgradeButton1" to="." method="_on_upgrade_button_1_pressed"]

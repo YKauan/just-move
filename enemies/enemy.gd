@@ -17,6 +17,8 @@ var player: CharacterBody2D = null
 # Carregua a cena do coletavel de vida
 var health_pack_scene = preload("res://collectibles/HealthPack.tscn") # Verifique se o caminho está correto!
 
+var is_invincible_event: bool = false
+
 # Flag para evitar que a funcao de morte seja chamada varias vezes
 var is_dying: bool = false
 
@@ -82,3 +84,7 @@ func die() -> void:
 
 func _on_attack_cooldown_timer_timeout() -> void:
 	can_attack = true
+	
+func set_invincible_status(status: bool) -> void:
+	is_invincible_event = status
+	print("Enemy invincible status set to: ", status)
