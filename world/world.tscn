@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bhx8d1ngthei0"]
+[gd_scene load_steps=9 format=3 uid="uid://bhx8d1ngthei0"]
 
 [ext_resource type="Script" uid="uid://ca4ehm1f8t6oy" path="res://world/world.gd" id="1_6xmxd"]
 [ext_resource type="PackedScene" uid="uid://bctbgfd13rw4t" path="res://player/Player.tscn" id="2_mmdvd"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://d14hfr24h6ig8" path="res://world/room_01.tscn" id="4_sc4t8"]
 [ext_resource type="PackedScene" uid="uid://kv6ld55nblpi" path="res://world/room_02.tscn" id="5_ai45w"]
 [ext_resource type="PackedScene" uid="uid://b3awkhhipfn4c" path="res://ui/game_ui.tscn" id="6_fn3g3"]
+[ext_resource type="Texture2D" uid="uid://btong5erj8re3" path="res://assets/nave/nv_1.webp" id="8_ai45w"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_6xmxd")
@@ -18,3 +19,7 @@ room_scenes = Array[PackedScene]([ExtResource("4_sc4t8"), ExtResource("5_ai45w")
 [node name="RoomContainer" type="Node2D" parent="."]
 
 [node name="GameUI" parent="." instance=ExtResource("6_fn3g3")]
+
+[node name="Nv1" type="Sprite2D" parent="."]
+position = Vector2(-20, 116)
+texture = ExtResource("8_ai45w")

@@ -880,5 +880,9 @@ parameters/Walk/blend_position = Vector2(0, 0)
 wait_time = 0.4
 one_shot = true
 
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.7, 0.7)
+position_smoothing_enabled = true
+
 [connection signal="body_entered" from="MeleeHitbox" to="." method="_on_melee_hitbox_body_entered"]
 [connection signal="timeout" from="MeleeAttackTimer" to="." method="_on_melee_attack_timer_timeout"]

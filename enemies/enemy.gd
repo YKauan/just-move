@@ -8,6 +8,9 @@ signal died
 @export var health: int = 30
 @export var damage: int = 10
 @export var dorpChance: float = 0.2
+@export var attack_cooldown: float = 1.0
+
+@onready var attack_cooldown_timer = $AttackCooldownTimer
 
 var player: CharacterBody2D = null
 
@@ -17,10 +20,13 @@ var health_pack_scene = preload("res://collectibles/HealthPack.tscn") # Verifiqu
 # Flag para evitar que a funcao de morte seja chamada varias vezes
 var is_dying: bool = false
 
+# Flag que indica se o inimigo pode atacar
+var can_attack: bool = true
+
 func _ready() -> void:
 	add_to_group("enemy")
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	# Se estiver morrendo nao nada
 	if is_dying: return 
 
@@ -33,8 +39,16 @@ func _physics_process(delta: float) -> void:
 		
 		for i in get_slide_collision_count():
 			var collision = get_slide_collision(i)
-			if collision.get_collider().is_in_group("player"):
-				collision.get_collider().take_damage(damage)
+			
+			if not collision:
+				continue
+			
+			var collider = collision.get_collider()
+			
+			if collider and collider.is_in_group("player") and can_attack:
+				collider.take_damage(damage)
+				can_attack = false
+				attack_cooldown_timer.start(attack_cooldown)
 
 # Funcao para o inimigo receber dano
 func take_damage(amount: int) -> void:
@@ -64,3 +78,7 @@ func die() -> void:
 		pack.global_position = self.global_position
 		
 	queue_free()
+
+
+func _on_attack_cooldown_timer_timeout() -> void:
+	can_attack = true

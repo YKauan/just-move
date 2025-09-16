@@ -10,7 +10,9 @@ collision_layer = 2
 script = ExtResource("1_xkw1x")
 speed = 30.0
 health = 20
+damage = 20
 dorpChance = 0.3
+attack_cooldown = 0.2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_ogxq4")
@@ -18,3 +20,8 @@ shape = SubResource("RectangleShape2D_ogxq4")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(-0.0197728, 0.0196831)
 texture = ExtResource("2_43lb5")
+
+[node name="AttackCooldownTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="AttackCooldownTimer" to="." method="_on_attack_cooldown_timer_timeout"]
