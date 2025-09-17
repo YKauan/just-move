@@ -1,18 +1,17 @@
-[gd_scene load_steps=8 format=3 uid="uid://bhx8d1ngthei0"]
+[gd_scene load_steps=7 format=3 uid="uid://bhx8d1ngthei0"]
 
 [ext_resource type="Script" uid="uid://ca4ehm1f8t6oy" path="res://world/world.gd" id="1_6xmxd"]
 [ext_resource type="PackedScene" uid="uid://bctbgfd13rw4t" path="res://player/Player.tscn" id="2_mmdvd"]
 [ext_resource type="PackedScene" uid="uid://cv5poqx5ahbnt" path="res://enemies/slime/Slime.tscn" id="3_sc4t8"]
-[ext_resource type="PackedScene" uid="uid://i5ihgcji1mlt" path="res://enemies/slime/Slime_b.tscn" id="4_ai45w"]
-[ext_resource type="PackedScene" uid="uid://d3e2mv1ekv5xa" path="res://enemies/slime/Slime_c.tscn" id="5_4papg"]
+[ext_resource type="PackedScene" uid="uid://cv7kmdv5co3qg" path="res://enemies/slime/SlimeB.tscn" id="4_fn3g3"]
 [ext_resource type="PackedScene" uid="uid://b3awkhhipfn4c" path="res://ui/game_ui.tscn" id="6_fn3g3"]
 [ext_resource type="Texture2D" uid="uid://btong5erj8re3" path="res://assets/nave/nv_1.webp" id="8_ai45w"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_6xmxd")
 player_scene = ExtResource("2_mmdvd")
-enemy_scenes = Array[PackedScene]([ExtResource("3_sc4t8"), ExtResource("4_ai45w"), ExtResource("5_4papg")])
-enemy_spawn_weights = Array[float]([5.0, 3.0, 2.0])
+enemy_scenes = Array[PackedScene]([ExtResource("3_sc4t8"), ExtResource("4_fn3g3")])
+enemy_spawn_weights = Array[float]([5.0, 3.0])
 
 [node name="RoomContainer" type="Node2D" parent="."]
 

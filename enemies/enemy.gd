@@ -138,3 +138,7 @@ func _on_attack_cooldown_timer_timeout() -> void:
 func set_invincible_status(status: bool) -> void:
 	is_invincible_event = status
 	print("Enemy invincible status set to: ", status)
+
+
+func _on_timeout() -> void:
+	pass # Replace with function body.

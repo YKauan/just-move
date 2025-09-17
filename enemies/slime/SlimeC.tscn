@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ukh0mg8u1ilx"]
+
+[ext_resource type="Script" uid="uid://bsh4a50d1l0vj" path="res://enemies/enemy.gd" id="1_vmm0n"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wf5vr"]
+
+[node name="SlimeC" type="CharacterBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.5, 0.5)
+shape = SubResource("RectangleShape2D_wf5vr")
+
+[node name="AttackCooldownTimer" type="Timer" parent="CollisionShape2D"]
+script = ExtResource("1_vmm0n")
+
+[connection signal="timeout" from="CollisionShape2D/AttackCooldownTimer" to="CollisionShape2D/AttackCooldownTimer" method="_on_timeout"]
