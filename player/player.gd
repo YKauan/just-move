@@ -1,5 +1,3 @@
-# player/player.gd
-
 extends CharacterBody2D
 
 var _state_machine
@@ -22,14 +20,14 @@ signal died
 var current_health: float
 var is_dead: bool = false
 
-# Variaveis de estamina (dash removido, mas estamina pode ser para outras ações futuras)
+# Variaveis de estamina 
 @export var max_stamina: float = 100.0
 @export var stamina_regen: float = 20.0 # Por segundo
 var current_stamina: float
 
 # Variaveis de combate e cura
 @export var melee_damage: float = 500.0
-# var is_dashing: bool = false # REMOVIDO: Dash removido
+
 var in_combat: bool = false
 var health_regen_rate: float = 5.0
 
@@ -37,7 +35,6 @@ var health_regen_rate: float = 5.0
 var bullet_scene: PackedScene = preload("res://player/bullet.tscn")
 @onready var fire_rate_timer: Timer = $FireRateTimer
 
-# @onready var dash_timer = $DashTimer # REMOVIDO: Dash removido
 @onready var out_of_combat_timer = $OutOfCombatTimer
 @onready var melee_hitbox = $MeleeHitbox
 @onready var melee_collision_shape = $MeleeHitbox/CollisionShape2D
@@ -46,25 +43,24 @@ var bullet_scene: PackedScene = preload("res://player/bullet.tscn")
 @export var _attack_time: Timer = null # Timer para o ataque melee (_on_melee_attack_timer_timeout)
 @export var _animation_tree: AnimationTree = null
 
-# --- Variáveis para controle de eventos (NOVO) ---
+# Variaveis controle dos eventos
 var input_modifier: String = "none" # "none", "invert_horizontal", "invert_vertical"
 var move_speed_multiplier: float = 1.0
 var damage_taken_multiplier: float = 1.0
-var can_shoot_event: bool = true # Controla se o evento proíbe tiro
-var can_melee_event: bool = true # Controla se o evento proíbe melee
+var can_shoot_event: bool = true
+var can_melee_event: bool = true
 
 
 func _ready() -> void:
 	_state_machine = _animation_tree["parameters/playback"]
-	
+
 	add_to_group("player")
 	current_health = max_health
 	current_stamina = max_stamina
-	
+
 	emit_signal("health_updated", current_health)
 	emit_signal("stamina_updated", current_stamina, max_stamina)
-	
-	# dash_timer.timeout.connect(_on_dash_timer_timeout) # REMOVIDO: Dash removido
+
 	out_of_combat_timer.timeout.connect(_on_out_of_combat_timer_timeout)
 
 # Funcao que lida com o movimento do personagem
@@ -74,7 +70,7 @@ func _character_movement() -> void:
 		Input.get_axis("move_up","move_down")
 	)
 	
-	# NOVO: Aplica modificadores de input do evento
+	# Aplica evento de inverter controles caso esteja aplicado
 	if input_modifier == "invert_horizontal":
 		_direction.x *= -1
 	elif input_modifier == "invert_vertical":
@@ -85,15 +81,13 @@ func _character_movement() -> void:
 		_animation_tree["parameters/Idle/blend_position"] = _direction
 		_animation_tree["parameters/Walk/blend_position"] = _direction
 		_animation_tree["parameters/Attack/blend_position"] = _direction
-		
-		# NOVO: Aplica o multiplicador de velocidade do evento
+
 		velocity.x = lerp(velocity.x, _direction.normalized().x * (speed * move_speed_multiplier), _acceleration)
 		velocity.y = lerp(velocity.y, _direction.normalized().y * (speed * move_speed_multiplier), _acceleration)
 		return
 		
-	# NOVO: Garante que a fricção também considera o multiplicador para parar
-	velocity.x = lerp(velocity.x, 0.0, _friction) # Mudei para 0.0 para garantir que pare
-	velocity.y = lerp(velocity.y, 0.0, _friction) # Mudei para 0.0 para garantir que pare
+	velocity.x = lerp(velocity.x, 0.0, _friction)
+	velocity.y = lerp(velocity.y, 0.0, _friction)
 
 
 # Funcao que lida com os ataques do player
@@ -102,7 +96,7 @@ func _attack() -> void:
 		set_physics_process(false) # Pausa physics para animação de ataque
 		_attack_time.start()
 		_is_attacking = true
-		
+
 # funcao responsavel por atualizar as animacoes do player
 func _animate() -> void:
 	if _is_attacking:
@@ -118,9 +112,6 @@ func _animate() -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
-	
-	# if is_dashing: # REMOVIDO: Dash removido
-	#	return
 
 	# Regenera estamina e vida
 	if current_stamina < max_stamina:
@@ -149,10 +140,6 @@ func handle_inputs():
 	if Input.is_action_just_pressed("attack_melee") and can_melee_event: # NOVO: Adicionado can_melee_event
 		perform_melee_attack()
 		
-	# acao de dash (REMOVIDO: Dash removido)
-	# if Input.is_action_just_pressed("dash") and current_stamina >= dash_cost and not is_dashing:
-	#	perform_dash()
-
 # Funcao que lida com o disparo
 func shoot() -> void:
 	fire_rate_timer.start()
@@ -160,27 +147,10 @@ func shoot() -> void:
 	get_tree().get_root().add_child(bullet)
 	bullet.global_position = $GunPivot.global_position
 	bullet.rotation = self.rotation # A rotação do player é a rotação do sprite principal
-	
-	# A direção da bala deve ser baseada na blend_position da AnimationTree para mira,
-	# ou você pode adicionar uma variável `last_direction` ao player.
-	# Por agora, usaremos a direção do GunPivot ou a própria rotação do player.
-	# Para um sistema mais robusto, você pode adicionar um `Vector2 last_aim_direction`
-	# que é atualizado na função `_character_movement` ou em `handle_inputs`
-	# quando o input de movimento ou mira (se houver) ocorre.
-	# Exemplo: bullet.direction = Vector2.from_angle(rotation - deg_to_rad(90)) # Se rotação 0 for para cima
-
-# Executa o dash (REMOVIDO: Dash removido)
-# func perform_dash() -> void:
-#	# ... lógica de dash ...
-#	pass
 
 # Executa o ataque melee
 func perform_melee_attack() -> void:
 	melee_collision_shape.disabled = false
-	# Usando o timer de ataque existente para controlar o hitbox
-	# Em vez de um create_timer aqui, o _attack_time deve ser usado.
-	# A desabilitação do hitbox deve ocorrer em _on_melee_attack_timer_timeout
-	# ou você pode usar um pequeno timer para isso aqui:
 	await get_tree().create_timer(0.1).timeout # Desabilita rapidamente após um pequeno delay
 	melee_collision_shape.disabled = true
 
@@ -227,11 +197,6 @@ func apply_upgrade(type: String, value: float) -> void:
 		_ :
 			printerr("Tipo de upgrade desconhecido: ", type)
 
-
-# func _on_dash_timer_timeout(): # REMOVIDO: Dash removido
-#	is_dashing = false
-#	velocity = Vector2.ZERO
-
 func _on_out_of_combat_timer_timeout():
 	in_combat = false
 
@@ -272,7 +237,3 @@ func set_can_shoot(status: bool) -> void:
 func set_can_melee(status: bool) -> void:
 	can_melee_event = status
 	print("Player can melee set to: ", status)
-
-# REMOVIDO: Dash speed multiplier não é mais necessário
-# func set_dash_speed_multiplier(multiplier: float) -> void: pass
-# func reset_dash_speed_multiplier() -> void: pass

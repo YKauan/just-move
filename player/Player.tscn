@@ -815,14 +815,14 @@ blend_mode = 1
 
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_3c3w1"]
 states/Attack/node = SubResource("AnimationNodeBlendSpace2D_wnvi2")
-states/Attack/position = Vector2(368.542, 345.453)
+states/Attack/position = Vector2(359.542, 264.453)
 states/End/position = Vector2(609, 190)
 states/Idle/node = SubResource("AnimationNodeBlendSpace2D_aqcbf")
-states/Idle/position = Vector2(364.542, 113)
+states/Idle/position = Vector2(359.542, 119)
 states/Start/position = Vector2(125, 180)
 states/Walk/node = SubResource("AnimationNodeBlendSpace2D_3c3w1")
-states/Walk/position = Vector2(364.542, 255)
-graph_offset = Vector2(-27.4582, 224.453)
+states/Walk/position = Vector2(359.542, 190)
+graph_offset = Vector2(-27.4582, 59.527058)
 
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("_attack_time", "_animation_tree")]
 collision_mask = 2
