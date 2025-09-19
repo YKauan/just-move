@@ -69,7 +69,7 @@ func _enemy_movement(target_position: Vector2) -> void:
 	if _animation_tree:
 		_animation_tree["parameters/idle/blend_position"] = direction
 		_animation_tree["parameters/walk/blend_position"] = direction
-		# Se a animação de ataque tiver blend_position, também atualize aqui
+		_animation_tree["parameters/death/blend_position"] = direction
 		_animation_tree["parameters/attack/blend_position"] = direction
 
 
@@ -121,7 +121,7 @@ func take_damage(amount: int) -> void:
 
 func die() -> void:
 	emit_signal("died")
-	
+	_state_machine.travel("death")
 	if randf() < dorpChance:
 		var pack = health_pack_scene.instantiate()
 		var world_manager_node = get_tree().get_first_node_in_group("world_manager")
