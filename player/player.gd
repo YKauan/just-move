@@ -52,6 +52,7 @@ var can_melee_event: bool = true
 
 
 func _ready() -> void:
+	print_debug("player ok")
 	_state_machine = _animation_tree["parameters/playback"]
 
 	add_to_group("player")
@@ -151,7 +152,7 @@ func shoot() -> void:
 # Executa o ataque melee
 func perform_melee_attack() -> void:
 	melee_collision_shape.disabled = false
-	await get_tree().create_timer(0.1).timeout # Desabilita rapidamente após um pequeno delay
+	await get_tree().create_timer(0.1).timeout
 	melee_collision_shape.disabled = true
 
 
@@ -201,6 +202,7 @@ func _on_out_of_combat_timer_timeout():
 	in_combat = false
 
 func _on_melee_hitbox_body_entered(body):
+	print("player entrou na area de attack")
 	if body.is_in_group("enemy"):
 		body.take_damage(melee_damage)
 

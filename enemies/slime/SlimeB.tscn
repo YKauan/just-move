@@ -1740,10 +1740,12 @@ states/walk/position = Vector2(384, 107)
 
 [node name="SlimeB" type="CharacterBody2D" node_paths=PackedStringArray("_animation_tree")]
 light_mask = 2
+collision_layer = 2
 script = ExtResource("1_ucsic")
 _animation_tree = NodePath("AnimationTree")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+light_mask = 2
 position = Vector2(0.5, 0)
 shape = SubResource("RectangleShape2D_2gakv")
 

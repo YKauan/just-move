@@ -1514,7 +1514,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [&"walk_right"]
+"values": [&"walk_left"]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -1725,6 +1725,7 @@ attack_cooldown = 0.2
 _animation_tree = NodePath("AnimationTree")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+light_mask = 2
 position = Vector2(0.5, -4.5)
 shape = SubResource("RectangleShape2D_ogxq4")
 disabled = true

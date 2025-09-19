@@ -1702,10 +1702,12 @@ graph_offset = Vector2(173.35414, 0)
 
 [node name="SlimeC" type="CharacterBody2D" node_paths=PackedStringArray("_animation_tree")]
 light_mask = 2
+collision_layer = 2
 script = ExtResource("1_vmm0n")
 _animation_tree = NodePath("AnimationTree")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+light_mask = 2
 position = Vector2(0.5, 1)
 shape = SubResource("RectangleShape2D_wf5vr")
 

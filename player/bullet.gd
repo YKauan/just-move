@@ -8,6 +8,7 @@ func _process(delta: float) -> void:
 	position += transform.x * speed * delta
 
 func _on_body_entered(body: Node) -> void:
+	print("entrou no body da bala")
 	# Se a bala colidir com um corpo no grupo "enemy"...
 	if body.is_in_group("enemy"):
 		# ...chama a função take_damage do inimigo.

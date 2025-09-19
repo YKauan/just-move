@@ -32,13 +32,12 @@ var is_dying: bool = false
 var can_attack: bool = true
 
 func _ready() -> void:
-	if _animation_tree: # Verificação de segurança
+	add_to_group("enemy")
+	
+	if _animation_tree:
 		_state_machine = _animation_tree["parameters/playback"]
 	else:
 		printerr("Erro: _animation_tree não foi configurada no inimigo!")
-
-	add_to_group("enemy")
-	# attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timer_timeout)
 
 func _physics_process(_delta: float) -> void:
 	# Se estiver morrendo, não faz nada além de parar
@@ -60,7 +59,7 @@ func _physics_process(_delta: float) -> void:
 	_animate() # Atualiza as animações
 	move_and_slide()
 
-# NOVA FUNÇÃO: Lida com o movimento do inimigo em direção a um alvo
+
 func _enemy_movement(target_position: Vector2) -> void:
 	var direction = (target_position - global_position).normalized()
 	velocity = direction * speed
@@ -111,10 +110,12 @@ func _animate() -> void:
 
 # Funcao para o inimigo receber dano
 func take_damage(amount: int) -> void:
-	if is_dying or is_invincible_event:
+	print("inimigo entrou para tomar dano")
+	if is_dying:
 		return
 
 	health -= amount
+	print(health)
 	if health <= 0 and not is_dying:
 		is_dying = true
 		call_deferred("die")
@@ -138,7 +139,4 @@ func _on_attack_cooldown_timer_timeout() -> void:
 func set_invincible_status(status: bool) -> void:
 	is_invincible_event = status
 	print("Enemy invincible status set to: ", status)
-
-
-func _on_timeout() -> void:
-	pass # Replace with function body.
+	
