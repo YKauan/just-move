@@ -1714,6 +1714,7 @@ states/walk/position = Vector2(377.21616, 94)
 graph_offset = Vector2(-97.78385, 0)
 
 [node name="Slime" type="CharacterBody2D" node_paths=PackedStringArray("_animation_tree")]
+light_mask = 2
 collision_layer = 2
 script = ExtResource("1_qtm1b")
 speed = 30.0
