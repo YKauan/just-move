@@ -1717,11 +1717,6 @@ graph_offset = Vector2(-97.78385, 0)
 light_mask = 2
 collision_layer = 2
 script = ExtResource("1_qtm1b")
-speed = 30.0
-health = 20
-damage = 20
-dorpChance = 0.3
-attack_cooldown = 0.2
 _animation_tree = NodePath("AnimationTree")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -1729,9 +1724,6 @@ light_mask = 2
 position = Vector2(0.5, -4.5)
 shape = SubResource("RectangleShape2D_ogxq4")
 disabled = true
-
-[node name="AttackCooldownTimer" type="Timer" parent="."]
-one_shot = true
 
 [node name="Animation" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_ubnoq")
@@ -1742,10 +1734,13 @@ libraries = {
 &"": SubResource("AnimationLibrary_jcqyg")
 }
 
+[node name="AttackCooldownTimer" type="Timer" parent="."]
+one_shot = true
+
 [node name="AnimationTree" type="AnimationTree" parent="."]
 tree_root = SubResource("AnimationNodeStateMachine_jcqyg")
 anim_player = NodePath("../AnimationPlayer")
-parameters/attack/blend_position = Vector2(-0.007712066, 0.98901093)
+parameters/attack/blend_position = Vector2(0.07455015, -0.41704035)
 parameters/death/blend_position = Vector2(0, 0)
 parameters/idle/blend_position = Vector2(-0.066838026, 0.39560437)
 parameters/walk/blend_position = Vector2(0, 0)

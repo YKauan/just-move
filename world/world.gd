@@ -15,6 +15,7 @@ extends Node2D
 @export var enemy_increase_min: int = 3
 @export var enemy_increase_max: int = 7
 @export var spawn_interval: float = 1.0
+@export var ai_update_interval: float = 0.2
 
 @export_category("Random Events")
 @export var event_wave_interval_min: int = 3 
@@ -24,11 +25,16 @@ extends Node2D
 @onready var game_ui = $GameUI
 @onready var spawn_timer = $SpawnTimer
 
+# Servicos de AI e Wave
+@onready var enemy_ai_service = $EnemyAIService
+@onready var wave_manager = $WaveManager
+
 var is_paused: bool = false
 var player_instance: CharacterBody2D
 var all_possible_upgrades: Array = []
 var all_possible_events: Array = []
 var current_active_event: Dictionary = {}
+var ai_update_timer: float = 0.0
 
 var current_wave: int = 0
 var next_event_wave: int = 0
@@ -36,6 +42,7 @@ var next_event_wave: int = 0
 var enemies_to_spawn_this_wave: int = 0
 var enemies_spawned_this_wave: int = 0
 var enemies_alive_in_wave: int = 0
+var wave_spawn_list: Array = []
 
 func _ready() -> void:
 	# Carrega upgrades e eventos do JSON
@@ -60,9 +67,18 @@ func _ready() -> void:
 	
 	# Conecta o sinal de timeout do timer de spawn
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
+	enemy_ai_service.ai_calculations_finished.connect(_on_ai_calculations_finished)
+	wave_manager.wave_calculated.connect(_on_wave_calculated)
 	
 	# Inicia o jogo e o ciclo de ondas
 	start_game()
+
+func _physics_process(delta):
+	# Atualiza a IA em intervalos fixos para não sobrecarregar
+	ai_update_timer += delta
+	if ai_update_timer >= ai_update_interval:
+		ai_update_timer = 0.0
+		request_ai_update_from_service()
 
 # Configura as conexoes do jogador com a UI
 func setup_player_connections():
@@ -85,65 +101,68 @@ func start_game():
 
 # Inicia a proxima onda de inimigos
 func start_next_wave():
-	# Encerra qualquer evento ativo da onda anterior se houver
-	if not current_active_event.is_empty():
-		end_current_event()
-		
 	current_wave += 1
-	print("Iniciando Onda ", current_wave)
+	print("Calculando Onda ", current_wave, "...")
 	
-	# Checa se e hora de um novo evento aleatorio
-	if current_wave >= next_event_wave:
-		check_for_random_event()
-		
-	# Calcula quantos inimigos tera esta onda
-	if current_wave == 1:
-		enemies_to_spawn_this_wave = initial_enemies_in_wave
-	else:
-		var increase = randi_range(enemy_increase_min, enemy_increase_max)
-		enemies_to_spawn_this_wave += increase
-		
-	# Reseta os contadores da onda
+	# Prepara os dados para o WaveManager calcular
+	var wave_data = {
+		"current_wave": current_wave,
+		"initial_enemies": initial_enemies_in_wave,
+		"increase_min": enemy_increase_min,
+		"increase_max": enemy_increase_max,
+		"last_wave_enemy_count": wave_spawn_list.size(),
+		"enemy_scenes": enemy_scenes,
+		"enemy_weights": enemy_spawn_weights
+	}
+	wave_manager.request_next_wave_calculation(wave_data)
+
+# Chamado quando a thread do WaveManager termina
+func _on_wave_calculated(spawn_data: Array):
+	print("Onda ", current_wave, " calculada. Inimigos a spawnar: ", spawn_data.size())
+	wave_spawn_list = spawn_data
 	enemies_spawned_this_wave = 0
-	enemies_alive_in_wave = enemies_to_spawn_this_wave
-	
-	# Atualiza a UI com o novo contador de inimigos
+	enemies_alive_in_wave = wave_spawn_list.size()
 	game_ui.update_enemy_counter(enemies_alive_in_wave)
-	
-	# Inicia o timer para spawnar inimigos individualmente
 	spawn_timer.start(spawn_interval)
-
-# Timer para spwanar os inimigos
-func _on_spawn_timer_timeout():
-	# Garante que o jogador ainda existe e que ainda ha inimigos para spawnar nesta onda
-	if not is_instance_valid(player_instance):
-		spawn_timer.stop()
-		return
-
-	if enemies_spawned_this_wave >= enemies_to_spawn_this_wave:
-		spawn_timer.stop()
-		return
-
-	# Seleciona um tipo de inimigo e uma posicao de spawn
-	var enemy_to_instantiate = pick_random_enemy_type()
 	
-	if not enemy_to_instantiate:
-		printerr("Erro ao tentar spawnar: tipo de inimigo invalido.")
+# Spawna um inimigo da lista pré-calculada
+func _on_spawn_timer_timeout():
+	if enemies_spawned_this_wave >= wave_spawn_list.size():
+		spawn_timer.stop()
 		return
 		
-	var spawn_position = get_random_spawn_position()
-	
-	# Instancia, configura e adiciona o inimigo a cena
-	var enemy = enemy_to_instantiate.instantiate()
-	enemy.global_position = spawn_position
+	var spawn_info = wave_spawn_list[enemies_spawned_this_wave]
+	var enemy = spawn_info["scene"].instantiate()
+	enemy.global_position = get_random_spawn_position()
 	enemy.died.connect(_on_enemy_died)
 	add_child(enemy)
 	
-	# Se houver um evento ativo que afete inimigos, aplica ele ao novo inimigo
-	if not current_active_event.is_empty() and current_active_event.get("type") == "enemy_effect":
-		apply_enemy_event_effect(enemy, current_active_event.get("effect", {}))
-		
 	enemies_spawned_this_wave += 1
+
+# Pede para o serviço de IA calcular as direções
+func request_ai_update_from_service():
+	var enemies = get_tree().get_nodes_in_group("enemy")
+	if enemies.is_empty():
+		return
+		
+	var enemy_data_for_thread: Array = []
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			enemy_data_for_thread.append({"id": enemy.get_instance_id(), "pos": enemy.global_position})
+	
+	if is_instance_valid(player_instance):
+		enemy_ai_service.request_ai_update(enemy_data_for_thread, player_instance.global_position)
+
+# Chamado quando a thread de IA termina
+func _on_ai_calculations_finished(results: Array):
+	for result in results:
+		var enemy_id = result["id"]
+		var direction = result["direction"]
+		
+		# Encontra o inimigo pelo ID e atualiza sua direção de movimento
+		var enemy_node = instance_from_id(enemy_id)
+		if is_instance_valid(enemy_node):
+			enemy_node.set_movement_direction(direction)
 
 # Calcula uma posicao de spawn aleatoria ao redor do jogador
 func get_random_spawn_position() -> Vector2:

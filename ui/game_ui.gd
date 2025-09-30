@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var enemy_counter_label = $EnemyCounterLabel
 @onready var upgrade_screen = $UpgradeScreen
 @onready var event_message_label = $EventMessageLabel
+@onready var fps_counter_label = $FPSCounterLabel
 
 # Pego a referencia dos botoes
 @onready var upgrade_button_1 = $UpgradeScreen/VBoxContainer/UpgradeButton1
@@ -37,6 +38,10 @@ func _ready() -> void:
 	upgrade_button_1.pressed.connect(_on_upgrade_selected.bind(0))
 	upgrade_button_2.pressed.connect(_on_upgrade_selected.bind(1))
 	upgrade_button_3.pressed.connect(_on_upgrade_selected.bind(2))
+
+func _process(delta: float) -> void:
+	var fps = Performance.get_monitor(Performance.TIME_FPS)
+	fps_counter_label.text = "FPS: " + str(fps)
 
 # Conecta aos sinais do player
 func connect_player_signals(player_node: Node) -> void:

@@ -199,7 +199,6 @@ func _on_out_of_combat_timer_timeout():
 
 # Funcao de ataque melee
 func _on_melee_hitbox_body_entered(body):
-	print("player entrou na area de attack")
 	if body.is_in_group("enemy"):
 		body.take_damage(melee_damage)
 

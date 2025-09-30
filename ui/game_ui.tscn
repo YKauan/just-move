@@ -134,4 +134,11 @@ alignment = 0
 offset_right = 40.0
 offset_bottom = 23.0
 
+[node name="FPSCounterLabel" type="Label" parent="."]
+offset_left = 1.0
+offset_right = 41.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_font_sizes/font_size = 5
+
 [connection signal="pressed" from="UpgradeScreen/VBoxContainer/UpgradeButton1" to="." method="_on_upgrade_button_1_pressed"]
