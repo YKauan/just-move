@@ -9,14 +9,10 @@ func _process(delta: float) -> void:
 
 func _on_body_entered(body: Node) -> void:
 	print("entrou no body da bala")
-	# Se a bala colidir com um corpo no grupo "enemy"...
 	if body.is_in_group("enemy"):
-		# ...chama a função take_damage do inimigo.
 		body.take_damage(damage)
-	
-	# Destroi a bala após a colisão.
 	queue_free()
 
+# Quando a bala sair da cena deleta a mesma
 func _on_visible_on_screen_notifier_2d_screen_exited() -> void:
-	# Destroi a bala se ela sair da tela.
 	queue_free()

@@ -1,10 +1,6 @@
 extends CharacterBody2D
 
 var _state_machine
-var _is_attacking: bool = false
-
-# Pegando o Input
-var input: Vector2 = Vector2.ZERO
 
 # Sinais
 signal health_updated(current_health)
@@ -40,19 +36,21 @@ var bullet_scene: PackedScene = preload("res://player/bullet.tscn")
 @onready var melee_collision_shape = $MeleeHitbox/CollisionShape2D
 
 @export_category("Objects")
-@export var _attack_time: Timer = null # Timer para o ataque melee (_on_melee_attack_timer_timeout)
+@export var _attack_time: Timer = null 
 @export var _animation_tree: AnimationTree = null
 
 # Variaveis controle dos eventos
-var input_modifier: String = "none" # "none", "invert_horizontal", "invert_vertical"
+var input_modifier: String = "none"
 var move_speed_multiplier: float = 1.0
 var damage_taken_multiplier: float = 1.0
 var can_shoot_event: bool = true
 var can_melee_event: bool = true
 
+# Criando vetor de input
+var input: Vector2 = Vector2.ZERO
+var _is_attacking: bool = false
 
 func _ready() -> void:
-	print_debug("player ok")
 	_state_machine = _animation_tree["parameters/playback"]
 
 	add_to_group("player")
@@ -90,11 +88,11 @@ func _character_movement() -> void:
 	velocity.x = lerp(velocity.x, 0.0, _friction)
 	velocity.y = lerp(velocity.y, 0.0, _friction)
 
-
 # Funcao que lida com os ataques do player
 func _attack() -> void:
 	if Input.is_action_pressed("attack_melee") and not _is_attacking and can_melee_event: # NOVO: Adicionado can_melee_event
-		set_physics_process(false) # Pausa physics para animação de ataque
+		# Pausa o physics para executar a animacao de attack
+		set_physics_process(false)
 		_attack_time.start()
 		_is_attacking = true
 
@@ -147,7 +145,7 @@ func shoot() -> void:
 	var bullet = bullet_scene.instantiate() as Node2D
 	get_tree().get_root().add_child(bullet)
 	bullet.global_position = $GunPivot.global_position
-	bullet.rotation = self.rotation # A rotação do player é a rotação do sprite principal
+	bullet.rotation = self.rotation
 
 # Executa o ataque melee
 func perform_melee_attack() -> void:
@@ -155,25 +153,23 @@ func perform_melee_attack() -> void:
 	await get_tree().create_timer(0.1).timeout
 	melee_collision_shape.disabled = true
 
-
 # Funcao para lidar com o dano ao personagem
 func take_damage(amount: int) -> void:
 	if is_dead:
 		return
 
-	# NOVO: Aplica o multiplicador de dano recebido do evento
 	var final_damage = amount * damage_taken_multiplier
 	current_health -= final_damage
 	emit_signal("health_updated", current_health)
 	
 	in_combat = true
-	out_of_combat_timer.start(5.0) # Reseta o timer
+	out_of_combat_timer.start(5.0)
 	
 	if current_health <= 0 and not is_dead:
 		is_dead = true
-		$CollisionShape2D.disabled = true # Desabilita a colisão principal do player
-		set_physics_process(false) # Interrompe o processamento físico do player
-		velocity = Vector2.ZERO # Garante que o player pare
+		$CollisionShape2D.disabled = true 
+		set_physics_process(false)
+		velocity = Vector2.ZERO
 		emit_signal("died")
 
 # Funcao que lida com a cura do player
@@ -194,48 +190,57 @@ func apply_upgrade(type: String, value: float) -> void:
 			speed += value
 		"stamina_regen":
 			stamina_regen += value
-		# Outros upgrades podem ser adicionados aqui
 		_ :
 			printerr("Tipo de upgrade desconhecido: ", type)
 
+# Funcao que indica se o player esta em combate 
 func _on_out_of_combat_timer_timeout():
 	in_combat = false
 
+# Funcao de ataque melee
 func _on_melee_hitbox_body_entered(body):
 	print("player entrou na area de attack")
 	if body.is_in_group("enemy"):
 		body.take_damage(melee_damage)
 
+# Funcao do timer do melee ataque
 func _on_melee_attack_timer_timeout() -> void:
 	set_physics_process(true)
 	_is_attacking = false
-	# melee_collision_shape.disabled = true # Você pode mover isso para aqui se quiser que o hitbox dure o ataque inteiro
 
-# --- Funções para serem chamadas pelos eventos do World (NOVO) ---
+# ==============Funcoes de Eventos Globais===================#
+
+# altera o input
 func set_input_modifier(modifier: String) -> void:
 	input_modifier = modifier
 	print("Player input modifier set to: ", modifier)
 
+# altera o move speed
 func set_move_speed_multiplier(multiplier: float) -> void:
 	move_speed_multiplier = multiplier
 	print("Player move speed multiplier set to: ", multiplier)
 
+# reseta o move speed
 func reset_move_speed_multiplier() -> void:
 	move_speed_multiplier = 1.0
 	print("Player move speed multiplier reset.")
 
+# atualiza o multiplicador de dano
 func set_damage_taken_multiplier(multiplier: float) -> void:
 	damage_taken_multiplier = multiplier
 	print("Player damage taken multiplier set to: ", multiplier)
 
+# Reseta o multiplicador de dano
 func reset_damage_taken_multiplier() -> void:
 	damage_taken_multiplier = 1.0
 	print("Player damage taken multiplier reset.")
 
+# funcao para atualizar se o player pode atirar
 func set_can_shoot(status: bool) -> void:
 	can_shoot_event = status
 	print("Player can shoot set to: ", status)
 
+# funcao para atualizar se o player pode dar o ataque melee
 func set_can_melee(status: bool) -> void:
 	can_melee_event = status
 	print("Player can melee set to: ", status)
