@@ -1,110 +1,124 @@
 extends CanvasLayer
 
-# Pego os labels
+# Referências aos labels principais da UI
 @onready var health_label = $HealthLabel
 @onready var stamina_label = $StaminaLabel
 @onready var enemy_counter_label = $EnemyCounterLabel
-@onready var upgrade_screen = $UpgradeScreen
+@onready var pause_menu = $PauseMenu
 @onready var event_message_label = $EventMessageLabel
 @onready var fps_counter_label = $FPSCounterLabel
 
-# Pego a referencia dos botoes
-@onready var upgrade_button_1 = $UpgradeScreen/VBoxContainer/UpgradeButton1
-@onready var upgrade_button_2 = $UpgradeScreen/VBoxContainer/UpgradeButton2
-@onready var upgrade_button_3 = $UpgradeScreen/VBoxContainer/UpgradeButton3
+# Referências ao novo sistema de cards de upgrade
+@onready var upgrade_card_container = $UpgradeCardContainer
+@onready var upgrade_cards: Array[Node] = [ # Use Array[Node] para tipagem mais clara
+	$UpgradeCardContainer/CardHolder/UpgradeCard1,
+	$UpgradeCardContainer/CardHolder/UpgradeCard2,
+	$UpgradeCardContainer/CardHolder/UpgradeCard3
+]
 
-# Pego as referencias do menu
-@onready var pause_menu = $PauseMenu
-@onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
-@onready var main_menu_button = $PauseMenu/VBoxContainer/MainMenuButton
-
-var world_node: Node
-
-# Upgrades a serem oferecidos
-var current_upgrades: Array
+# Variáveis de controle
+var world_manager: Node = null # Inicialize como null
+var current_upgrades: Array = [] # Armazena os dados dos upgrades atuais
 
 func _ready() -> void:
-	upgrade_screen.hide()
-	event_message_label.hide()
-	pause_menu.hide()
-	
+	# Await para garantir que o World já esteja pronto e no grupo
 	await get_tree().process_frame
-	world_node = get_tree().get_first_node_in_group("world_manager")
+	world_manager = get_tree().get_first_node_in_group("world_manager")
 	
-	resume_button.pressed.connect(_on_resume_button_pressed)
-	main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+	if world_manager == null:
+		printerr("ERROR: World manager not found in 'world_manager' group.")
+		# Considere parar o jogo ou tomar outra ação de recuperação aqui
+	
+	# Esconde todos os menus e elementos de UI que não devem estar visíveis no início
+	pause_menu.hide()
+	upgrade_card_container.hide()
+	event_message_label.hide()
+	
+	# Conecta o sinal personalizado 'card_selected' de cada card
+	# Cada UpgradeCard (que tem o script UpgradeCard.gd) emite este sinal
+	for i in range(upgrade_cards.size()):
+		var card = upgrade_cards[i] # 'card' é uma instância de UpgradeCard
+		if card and card.has_method("update_card_data"): # Garante que é um UpgradeCard válido
+			card.card_selected.connect(_on_upgrade_selected.bind(i))
+		else:
+			printerr("ERROR: UpgradeCard ", i, " is not a valid UpgradeCard instance or missing script.")
 
-	# Conecta aos botoes
-	upgrade_button_1.pressed.connect(_on_upgrade_selected.bind(0))
-	upgrade_button_2.pressed.connect(_on_upgrade_selected.bind(1))
-	upgrade_button_3.pressed.connect(_on_upgrade_selected.bind(2))
 
 func _process(delta: float) -> void:
+	# Atualiza o contador de FPS (para fins de depuração e TCC)
 	var fps = Performance.get_monitor(Performance.TIME_FPS)
 	fps_counter_label.text = "FPS: " + str(fps)
 
-# Conecta aos sinais do player
-func connect_player_signals(player_node: Node) -> void:
-	if not player_node: return
-	player_node.health_updated.connect(update_health_label)
-	if player_node.has_signal("stamina_updated"):
-		player_node.stamina_updated.connect(update_stamina_label)
+# --- Funções para Atualizar Labels da UI ---
 
-# Atualiza o label de vida
-func update_health_label(current_health: int) -> void:
-	health_label.text = "Vida: %d" % current_health
+func update_health_label(new_health: int) -> void:
+	health_label.text = "Health: %d" % new_health
 
-# Atualiza o Label de stamina
 func update_stamina_label(current_stamina: int, max_stamina: int) -> void:
-	stamina_label.text = "Vigor: %d / %d" % [current_stamina, max_stamina]
+	stamina_label.text = "Stamina: %d/%d" % [current_stamina, max_stamina]
 
-# Atualiza o contador de inimigos restantes
 func update_enemy_counter(count: int) -> void:
-	enemy_counter_label.text = "Inimigos restantes: %d" % count
-	
-# Funcao para exibir os upgrades
-func show_upgrade_screen(upgrades: Array) -> void:
-	current_upgrades = upgrades
-	
-	# Configura o texto de cada botao
-	if upgrades.size() > 0:
-		upgrade_button_1.text = upgrades[0].text
-	if upgrades.size() > 1:
-		upgrade_button_2.text = upgrades[1].text
-	if upgrades.size() > 2:
-		upgrade_button_3.text = upgrades[2].text
-	
-	upgrade_screen.show()
+	enemy_counter_label.text = "Enemies: %d" % count
 
-# Funcao para executar o upgrade selecionado
-func _on_upgrade_selected(index: int) -> void:
-	if world_node and not current_upgrades.is_empty():
-		var chosen_upgrade = current_upgrades[index]
-		
-		# Aplica o upgrade
-		world_node.apply_player_upgrade(chosen_upgrade.type, chosen_upgrade.value)
-	
-	upgrade_screen.hide()
+# --- Funções para Gerenciamento de Menus e Upgrades ---
 
-# Atualiza flag do menu de pause
 func toggle_pause_menu(is_paused: bool) -> void:
 	pause_menu.visible = is_paused
 
-# Despausa o jogo
-func _on_resume_button_pressed() -> void:
-	if world_node:
-		world_node.toggle_pause()
+# Mostra a tela de upgrades e preenche os cards com os dados recebidos
+func show_upgrade_screen(upgrades: Array) -> void:
+	current_upgrades = upgrades
+	upgrade_card_container.show()
+	
+	for i in range(upgrade_cards.size()):
+		var card = upgrade_cards[i]
+		if i < upgrades.size():
+			if card and card.has_method("update_card_data"):
+				card.update_card_data(upgrades[i])
+				card.show()
+			else:
+				printerr("ERROR: Cannot update card ", i, ". Invalid instance or missing update_card_data method.")
+				card.hide() # Esconde se for inválido
+		else:
+			# Esconde cards extras se houver menos de 3 upgrades para mostrar
+			card.hide()
 
-# Volta ao menu principal
-func _on_main_menu_button_pressed() -> void:
-	get_tree().paused = false
-	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
+# Chamado quando um upgrade card é clicado
+func _on_upgrade_selected(index: int) -> void:
+	if world_manager and index < current_upgrades.size():
+		var chosen_upgrade = current_upgrades[index]
+		
+		# Assume que chosen_upgrade é um Dictionary com "type" e "value"
+		# (O JSON deve ter esses campos)
+		var upgrade_type = chosen_upgrade.get("type", "")
+		var upgrade_value = chosen_upgrade.get("value", 0.0)
+		
+		if upgrade_type != "":
+			world_manager.apply_player_upgrade(upgrade_type, upgrade_value)
+		else:
+			printerr("ERROR: Upgrade type is empty for chosen upgrade at index ", index)
+		
+	upgrade_card_container.hide()
 
-# Exibe label de evento atual
+# --- Funções para Mensagens de Evento ---
+
 func show_event_message(message: String) -> void:
 	event_message_label.text = message
 	event_message_label.show()
+	# Pode adicionar um Timer para esconder a mensagem automaticamente após um tempo
+	var timer = get_tree().create_timer(3.0)
+	timer.timeout.connect(hide_event_message)
 
-# Esconde label de evento
 func hide_event_message() -> void:
 	event_message_label.hide()
+
+# --- Funções dos Botões do Menu de Pausa ---
+
+func _on_ResumeButton_pressed():
+	if world_manager:
+		world_manager.toggle_pause()
+
+func _on_MainMenuButton_pressed():
+	get_tree().paused = false
+	# Certifique-se de que SceneManager existe e tem o método go_to_scene
+	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")

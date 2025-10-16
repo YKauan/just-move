@@ -1,17 +1,23 @@
 [
 	{
+		"name":"Max Life",
 		"type":"max_health",
 		"value":10,
-		"text":"Aumentar Vida Máxima (+10)"
+		"text":"Aumentar Vida Máxima (+10)",
+		"icon_path": "res://assets/icons/health_icon.png"
 	},
 	{
+		"name":"Pes Leves",
 		"type":"move_speed",
 		"value":5,
-		"text":"Aumentar Velocidade (+5)"
+		"text":"Aumentar Velocidade (+5)",
+		"icon_path": "res://assets/icons/speed.png"
 	},
 	{
+		"name":"Reator de Vigor",
 		"type":"stamina_regen",
 		"value":10,
-		"text":"Regeneração de Vigor (+10/s)"
+		"text":"Regeneração de Vigor (+10/s)",
+		"icon_path": "res://assets/icons/stamina.png"
 	}
 ]

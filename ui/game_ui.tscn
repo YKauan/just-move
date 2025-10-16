@@ -2,9 +2,7 @@
 
 [ext_resource type="Script" uid="uid://qagqdts4ggad" path="res://ui/game_ui.gd" id="1_dcmab"]
 [ext_resource type="FontFile" uid="uid://cru716ds68uln" path="res://assets/fontes/BrunoAceSCRegular.ttf" id="2_w46tp"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w46tp"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
+[ext_resource type="PackedScene" uid="uid://bhikq847jvpse" path="res://ui/UpgradeCard.tscn" id="3_7hrjk"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7hrjk"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
@@ -45,53 +43,6 @@ offset_right = 0.5
 offset_bottom = 23.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
-
-[node name="UpgradeScreen" type="Panel" parent="."]
-process_mode = 3
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_w46tp")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UpgradeScreen"]
-layout_mode = 0
-offset_left = -122.0
-offset_top = -6.0
-offset_right = 160.0
-offset_bottom = 95.0
-
-[node name="UpgradeButton1" type="Button" parent="UpgradeScreen/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_w46tp")
-text = "Aumentar Vida Máxima (+50)"
-
-[node name="UpgradeButton2" type="Button" parent="UpgradeScreen/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_w46tp")
-text = "Placeholder 1"
-
-[node name="UpgradeButton3" type="Button" parent="UpgradeScreen/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_w46tp")
-text = "Placeholder 2"
-
-[node name="Label" type="Label" parent="UpgradeScreen"]
-layout_mode = 0
-offset_left = -81.0
-offset_top = -44.0
-offset_right = 123.0
-offset_bottom = -21.0
-theme_override_fonts/font = ExtResource("2_w46tp")
-text = "Escolha um Upgrade"
 
 [node name="PauseMenu" type="Panel" parent="."]
 visible = false
@@ -141,4 +92,37 @@ offset_bottom = 23.0
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 5
 
-[connection signal="pressed" from="UpgradeScreen/VBoxContainer/UpgradeButton1" to="." method="_on_upgrade_button_1_pressed"]
+[node name="UpgradeCardContainer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CardHolder" type="HBoxContainer" parent="UpgradeCardContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -27.0
+offset_right = 32.0
+offset_bottom = 27.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="UpgradeCard1" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+layout_mode = 2
+
+[node name="UpgradeCard2" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+layout_mode = 2
+
+[node name="UpgradeCard3" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+layout_mode = 2
