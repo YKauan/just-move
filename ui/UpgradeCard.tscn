@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bhikq847jvpse"]
+
+[node name="UpgradeCard" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 32.0
+offset_right = 102.0
+offset_bottom = 152.0
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 92.0
+offset_bottom = 120.0
+
+[node name="VBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_right = 92.0
+offset_bottom = 120.0
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
