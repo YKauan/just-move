@@ -93,6 +93,7 @@ theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 5
 
 [node name="UpgradeCardContainer" type="Control" parent="."]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
