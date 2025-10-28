@@ -14,6 +14,7 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="GameUI" type="CanvasLayer"]
+process_mode = 3
 script = ExtResource("1_dcmab")
 
 [node name="HealthLabel" type="Label" parent="."]
@@ -45,6 +46,7 @@ grow_horizontal = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 
 [node name="PauseMenu" type="Panel" parent="."]
+process_mode = 3
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
@@ -64,9 +66,9 @@ layout_mode = 0
 offset_left = -135.0
 offset_right = -8.0
 offset_bottom = 66.0
+mouse_filter = 2
 
 [node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
-process_mode = 3
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_styles/normal = SubResource("StyleBoxFlat_pylni")
@@ -74,7 +76,6 @@ text = "Retornar"
 alignment = 0
 
 [node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
-process_mode = 3
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_styles/normal = SubResource("StyleBoxFlat_3vkek")
@@ -127,3 +128,6 @@ layout_mode = 2
 
 [node name="UpgradeCard3" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
 layout_mode = 2
+
+[connection signal="pressed" from="PauseMenu/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="PauseMenu/VBoxContainer/MainMenuButton" to="." method="_on_main_menu_button_pressed"]

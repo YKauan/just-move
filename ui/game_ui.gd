@@ -97,11 +97,10 @@ func show_event_message(message: String) -> void:
 func hide_event_message() -> void:
 	event_message_label.hide()
 
-# --- Funções dos Botões do Menu de Pausa ---
-func _on_ResumeButton_pressed():
+func _on_resume_button_pressed() -> void:
 	if world_manager:
 		world_manager.toggle_pause()
 
-func _on_MainMenuButton_pressed():
+func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
