@@ -1701,6 +1701,7 @@ blend_point_3/pos = Vector2(-1, 0)
 blend_mode = 1
 
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_7uo3n"]
+states/End/position = Vector2(568, 106)
 states/attack/node = SubResource("AnimationNodeBlendSpace2D_7uo3n")
 states/attack/position = Vector2(351, 158)
 states/death/node = SubResource("AnimationNodeBlendSpace2D_jeujw")
@@ -1709,6 +1710,7 @@ states/idle/node = SubResource("AnimationNodeBlendSpace2D_5jbn6")
 states/idle/position = Vector2(341, 45)
 states/walk/node = SubResource("AnimationNodeBlendSpace2D_i5kxh")
 states/walk/position = Vector2(351, 106)
+graph_offset = Vector2(-52.161503, 0)
 
 [node name="SlimeA" type="CharacterBody2D" node_paths=PackedStringArray("_animation_tree")]
 light_mask = 2

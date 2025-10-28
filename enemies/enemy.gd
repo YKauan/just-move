@@ -48,9 +48,6 @@ func _physics_process(_delta: float) -> void:
 		move_and_slide()
 		return
 
-	# A lógica de encontrar o player foi movida para o World.
-	# O inimigo agora só precisa executar as ordens de movimento e ataque.
-	
 	# Chama as funções de movimento, ataque e animação
 	_enemy_movement()
 	_enemy_attack_logic()
@@ -108,6 +105,7 @@ func _animate() -> void:
 		return
 		
 	_state_machine.travel("idle")
+
 
 # --- NOVA FUNÇÃO ---
 # Esta é a função que o world.gd estava tentando chamar.
