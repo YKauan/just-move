@@ -109,7 +109,6 @@ func _animate() -> void:
 		
 	_state_machine.travel("idle")
 
-
 # --- NOVA FUNÇÃO ---
 # Esta é a função que o world.gd estava tentando chamar.
 # Ela permite que o serviço de IA defina para onde este inimigo deve se mover.
@@ -125,7 +124,6 @@ func take_damage(amount: int) -> void:
 	if health <= 0 and not is_dying:
 		is_dying = true
 		call_deferred("die")
-
 
 # Funcao de morte
 func die() -> void:
@@ -145,11 +143,9 @@ func die() -> void:
 		
 	queue_free()
 
-
 # Funcao do cooldown do timer de attack
 func _on_attack_cooldown_timer_timeout() -> void:
 	can_attack = true
-
 
 func set_invincible_status(status: bool) -> void:
 	is_invincible_event = status

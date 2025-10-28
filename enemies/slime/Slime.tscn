@@ -1,4 +1,4 @@
-[gd_scene load_steps=183 format=3 uid="uid://cv5poqx5ahbnt"]
+[gd_scene load_steps=183 format=3 uid="uid://b57n3w1mt0fn2"]
 
 [ext_resource type="Script" uid="uid://bsh4a50d1l0vj" path="res://enemies/enemy.gd" id="1_qtm1b"]
 [ext_resource type="Texture2D" uid="uid://btxt1w4cwgm8e" path="res://assets/enemies/slime 1/slime_1_attack.png" id="2_c82c1"]
