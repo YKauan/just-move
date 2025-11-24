@@ -2,6 +2,7 @@
 extends Node2D
 
 var nav_grid: NavigationGrid
+var debug_enemy_lines: Array = [] # Para desenhar linhas de debug
 
 @export_category("World Dependencies")
 @export var player_scene: PackedScene
@@ -54,13 +55,6 @@ func _ready() -> void:
 	player_instance.global_position = Vector2(100, 100)
 	add_child(player_instance)
 	
-	setup_player_connections()
-	add_to_group("world_manager")
-	
-	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
-	enemy_ai_service.ai_calculations_finished.connect(_on_ai_calculations_finished)
-	wave_manager.wave_calculated.connect(_on_wave_calculated)
-	
 	# Inicializa o Grid A*
 	nav_grid = NavigationGrid.new()
 	# Cria um grid de 100x100 células (ajuste conforme o tamanho do seu mapa)
@@ -68,9 +62,16 @@ func _ready() -> void:
 	# Exemplo: Mapa de 3200x3200 pixels (100 células de 32px)
 	var map_rect = Rect2i(-100, -100, 200, 200)
 	nav_grid.setup_grid(map_rect, []) # Passa lista vazia se não tiver paredes ainda
-	queue_redraw()
+	
 	# Passa o grid para o serviço de IA
 	enemy_ai_service.setup(nav_grid)
+
+	setup_player_connections()
+	add_to_group("world_manager")
+	
+	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
+	enemy_ai_service.ai_calculations_finished.connect(_on_ai_calculations_finished)
+	wave_manager.wave_calculated.connect(_on_wave_calculated)
 	
 	start_game()
 
@@ -154,6 +155,8 @@ func request_ai_update_from_service():
 
 # Chamado quando a thread de IA termina
 func _on_ai_calculations_finished(results: Array):
+	debug_enemy_lines.clear() # Limpa linhas antigas
+	
 	for result in results:
 		var enemy_id = result["id"]
 		var direction = result["direction"]
@@ -161,6 +164,14 @@ func _on_ai_calculations_finished(results: Array):
 		var enemy_node = instance_from_id(enemy_id)
 		if is_instance_valid(enemy_node):
 			enemy_node.set_movement_direction(direction)
+			# Adiciona linha de debug (Do inimigo -> Direção calculada)
+			# Salva apenas 1 a cada 10 para não poluir a tela
+			if randi() % 10 == 0:
+				debug_enemy_lines.append({
+					"start": enemy_node.global_position,
+					"end": enemy_node.global_position + (direction * 50)
+				})
+	queue_redraw()
 
 # Calcula uma posicao de spawn aleatoria ao redor do jogador
 func get_random_spawn_position() -> Vector2:
@@ -252,18 +263,7 @@ func _on_player_died():
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
 
 func _draw():
-	if nav_grid and nav_grid.grid_rect:
-		var rect = nav_grid.grid_rect
-		var cell = nav_grid.cell_size
-		
-		# Converte coordenadas do grid (células) para pixels
-		var pixel_rect = Rect2(
-			rect.position.x * cell.x, 
-			rect.position.y * cell.y, 
-			rect.size.x * cell.x, 
-			rect.size.y * cell.y
-		)
-		
-		# Desenha um retângulo verde vazado representando a área do A*
-		draw_rect(pixel_rect, Color(0, 1, 0, 0.3), false, 5.0)
-		print("DEBUG: Área do Grid desenhada em: ", pixel_rect)
+
+	for line in debug_enemy_lines:
+		draw_line(line["start"], line["end"], Color.CYAN, 2.0)
+		draw_circle(line["end"], 2.0, Color.CYAN)
