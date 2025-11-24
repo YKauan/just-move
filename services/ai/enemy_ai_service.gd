@@ -1,18 +1,17 @@
+# services/ai/enemy_ai_service.gd
 extends Node
 
 signal ai_calculations_finished(results)
 
-# Configuracoes da Thread Pool
-@export var num_threads: int = 2
+@export var num_threads: int = 2 # Número de threads na pool
 
-# Pool de Threads
 var threads: Array[Thread] = []
-var workers: Array = []
+var workers: Array[RefCounted] = []
+var nav_grid: NavigationGrid	
 
-# Variaveis de Controle
-var is_processing_wave: bool = false
+var is_processing: bool = false
 var results_from_workers: Array = []
-var workers_to_check: Array = [] # NOVO: Lista de workers que estão trabalhando
+var workers_to_check: Array = [] # Lista de workers que estão trabalhando
 
 func _ready():
 	# Inicia a thread pool
@@ -20,12 +19,10 @@ func _ready():
 		var worker = preload("res://services/ai/ai_worker.gd").new()
 		var thread = Thread.new()
 		
-		# Inicializa os mecanismos de sincronizacao
 		worker.mutex = Mutex.new()
 		worker.work_semaphore = Semaphore.new()
 		worker.result_semaphore = Semaphore.new()
 		
-		# Inicia a thread que ficara esperando por trabalho
 		thread.start(Callable(worker, "work_loop"))
 		
 		threads.append(thread)
@@ -33,37 +30,38 @@ func _ready():
 	
 	print("Enemy AI Service ready with %d threads." % num_threads)
 
+func setup(_nav_grid: NavigationGrid):
+	nav_grid = _nav_grid
+	# Passa o grid para todos os workers existentes
+	for worker in workers:
+		worker.nav_grid = nav_grid
 
-# NOVO: A função _process vai verificar os resultados sem bloquear o jogo.
+# Função _process verifica os resultados sem bloquear o jogo
 func _process(_delta):
-	# Se não estivermos esperando por nenhum resultado, não faz nada.
 	if workers_to_check.is_empty():
 		return
 
 	var still_working = []
 	for worker in workers_to_check:
-		# Semaphore.try_wait() é não-bloqueante. Ele tenta "pegar" o semáforo.
-		# Se conseguir (retorna true), significa que o worker terminou.
-		# Se não conseguir (retorna false), o worker ainda está trabalhando.
+		# .try_wait() é não-bloqueante. Tenta pegar o semáforo.
+		# Se conseguir (true), o worker terminou.
 		if worker.result_semaphore.try_wait():
-			# O worker terminou, colete o resultado.
 			worker.mutex.lock()
 			results_from_workers.append_array(worker.output_data)
 			worker.mutex.unlock()
 		else:
-			# O worker ainda está ocupado, adicione-o à lista para checar no próximo frame.
+			# O worker ainda está ocupado, verifica no próximo frame
 			still_working.append(worker)
 	
 	workers_to_check = still_working
 	
-	# Se a lista de workers para checar estiver vazia, todos terminaram.
+	# Se a lista de verificação está vazia, todos terminaram.
 	if workers_to_check.is_empty():
 		emit_signal("ai_calculations_finished", results_from_workers)
-		is_processing_wave = false
+		is_processing = false
 
-
+# Garante que as threads fechem de forma segura
 func _exit_tree():
-	# Garante que as threads sejam encerradas de forma segura quando o jogo fecha
 	for worker in workers:
 		worker.mutex.lock()
 		worker.should_exit = true
@@ -74,18 +72,15 @@ func _exit_tree():
 		thread.wait_to_finish()
 	print("All AI worker threads stopped.")
 
-
-# ALTERADO: Esta função agora é não-bloqueante. Ela apenas inicia o trabalho.
+# Função chamada pelo World para iniciar o trabalho
 func request_ai_update(enemies: Array, player_pos: Vector2):
-	if is_processing_wave or enemies.is_empty():
-		# Ignora se ja estiver processando ou nao houver inimigos
+	if is_processing or enemies.is_empty():
 		return
 
-	is_processing_wave = true
+	is_processing = true
 	results_from_workers.clear()
 	workers_to_check.clear()
 	
-	# Distribui a lista de inimigos entre as threads
 	var batch_size = int(ceil(float(enemies.size()) / num_threads))
 	
 	for i in range(num_threads):
@@ -94,18 +89,14 @@ func request_ai_update(enemies: Array, player_pos: Vector2):
 		var end_index = min(start_index + batch_size, enemies.size())
 		
 		if start_index >= enemies.size():
-			continue # Nao ha mais inimigos para esta thread
+			continue 
 
-		# Adiciona este worker à lista de workers que estamos esperando
 		workers_to_check.append(worker)
-		
 		var batch = enemies.slice(start_index, end_index)
 		
-		# Adiciona a posicao do jogador a cada inimigo no lote
 		for j in range(batch.size()):
 			batch[j]["player_pos"] = player_pos
 			
-		# Envia o trabalho para a thread
 		worker.mutex.lock()
 		worker.input_data = batch
 		worker.mutex.unlock()
