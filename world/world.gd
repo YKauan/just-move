@@ -2,7 +2,7 @@
 extends Node2D
 
 var nav_grid: NavigationGrid
-var debug_enemy_lines: Array = [] # Para desenhar linhas de debug
+var debug_enemy_lines: Array = []
 
 @export_category("World Dependencies")
 @export var player_scene: PackedScene
@@ -22,7 +22,7 @@ var debug_enemy_lines: Array = [] # Para desenhar linhas de debug
 @export var enemy_increase_min: int = 3
 @export var enemy_increase_max: int = 7
 @export var spawn_interval: float = 1.0
-@export var ai_update_interval: float = 0.2 # Frequência de atualização da IA
+@export var ai_update_interval: float = 0.2
 
 @export_category("Random Events")
 @export var event_wave_interval_min: int = 3 
@@ -39,7 +39,7 @@ var ai_update_timer: float = 0.0
 var current_wave: int = 0
 var next_event_wave: int = 0
 
-var wave_spawn_list: Array = [] # Lista de inimigos pré-calculada pela thread
+var wave_spawn_list: Array = []
 var enemies_spawned_this_wave: int = 0
 var enemies_alive_in_wave: int = 0
 
