@@ -27,13 +27,15 @@ offset_right = 42.0
 offset_bottom = -1.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_font_sizes/font_size = 10
 
 [node name="StaminaLabel" type="Label" parent="."]
 offset_left = 1.0
-offset_top = 136.0
+offset_top = 143.0
 offset_right = 87.0
-offset_bottom = 159.0
+offset_bottom = 166.0
 theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_font_sizes/font_size = 10
 
 [node name="EnemyCounterLabel" type="Label" parent="."]
 anchors_preset = 5
