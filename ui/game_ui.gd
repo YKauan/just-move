@@ -22,6 +22,12 @@ extends CanvasLayer
 	$UpgradeCardContainer/CardHolder/UpgradeCard3
 ]
 
+var card_colors: Array[Color] = [
+	Color("#5c9aff"), # Azul
+	Color("#bd73ff"), # Roxo
+	Color("#6aff9b")  # Verde
+]
+
 var world_manager: Node = null
 var current_upgrades: Array = []
 
@@ -107,11 +113,14 @@ func show_upgrade_screen(upgrades: Array) -> void:
 	current_upgrades = upgrades
 	upgrade_card_container.show()
 	
+	card_colors.shuffle()
+	
 	for i in range(upgrade_cards.size()):
 		var card = upgrade_cards[i]
 		if i < upgrades.size():
 			if card and card.has_method("update_card_data"):
 				card.update_card_data(upgrades[i])
+				card.modulate = card_colors[i % card_colors.size()]
 				card.show()
 		else:
 			if card: card.hide()
