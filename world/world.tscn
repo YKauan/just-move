@@ -16,7 +16,6 @@ enemy_scenes = Array[PackedScene]([ExtResource("4_fn3g3"), ExtResource("5_sc4t8"
 enemy_spawn_weights = Array[float]([3.0, 3.0, 3.0])
 spawn_radius_min = 250.0
 spawn_radius_max = 400.0
-initial_enemies_in_wave = 1202
 
 [node name="RoomContainer" type="Node2D" parent="."]
 

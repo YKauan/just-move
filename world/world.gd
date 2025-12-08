@@ -2,7 +2,7 @@
 extends Node2D
 
 var nav_grid: NavigationGrid
-var debug_enemy_lines: Array = []
+var player_instance: CharacterBody2D
 
 @export_category("Multithreading Configuration")
 @export var use_dynamic_threads: bool = true # Se true, ignora o manual
@@ -28,25 +28,16 @@ var debug_enemy_lines: Array = []
 @export var spawn_interval: float = 1.0
 @export var ai_update_interval: float = 0.2
 
-@export_category("Random Events")
-@export var event_wave_interval_min: int = 3 
-@export var event_wave_interval_max: int = 7 
-@export var event_chance: float = 0.75
-
 var is_paused: bool = false
-var player_instance: CharacterBody2D
 var all_possible_upgrades: Array = []
-var all_possible_events: Array = []
-var current_active_event: Dictionary = {}
 var ai_update_timer: float = 0.0
 
 var final_thread_count: int = 2
 var max_hardware_threads = max(1, OS.get_processor_count() - 2)
 
 var current_wave: int = 0
-var next_event_wave: int = 0
-
 var wave_spawn_list: Array = []
+var debug_enemy_lines: Array = []
 var enemies_spawned_this_wave: int = 0
 var enemies_alive_in_wave: int = 0
 
@@ -125,8 +116,6 @@ func setup_player_connections():
 	player_instance.died.connect(_on_player_died, Node.CONNECT_DEFERRED)
 
 func start_game():
-	next_event_wave = randi_range(event_wave_interval_min, event_wave_interval_max)
-	print("Próximo evento aleatório agendado para a onda: ", next_event_wave)
 	start_next_wave()
 
 func start_next_wave():
