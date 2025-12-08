@@ -8,6 +8,7 @@ extends CanvasLayer
 @onready var event_message_label = $EventMessageLabel
 @onready var fps_counter_label = $FPSCounterLabel
 @onready var thread_label = $ThreadLabel
+@onready var thread_history_label = $ThreadHistoryLabel
 
 # Botões do Pause
 @onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
@@ -27,6 +28,7 @@ var current_upgrades: Array = []
 # Variáveis para a lógica de cor
 var previous_fps: float = 0.0
 var previous_busy_threads: int = -1
+var thread_log_history: Array = []
 
 func _ready() -> void:
 	await get_tree().process_frame
@@ -63,12 +65,29 @@ func _process(delta: float) -> void:
 func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
 	
+	var current_color_hex: String = "00ff00"
 	if busy_threads < previous_busy_threads:
 		thread_label.modulate = Color.RED
+		current_color_hex = "ff0000"
 	else:
 		thread_label.modulate = Color.GREEN
+		current_color_hex = "00ff00"
 		
 	previous_busy_threads = busy_threads
+	
+	if busy_threads > 0:
+		var log_entry = "[color=#%s]%d/%d[/color]" % [current_color_hex, busy_threads, total_threads]
+		
+		# Adiciona no começo da lista (push_front)
+		thread_log_history.push_front(log_entry)
+		
+		# Mantém apenas os últimos 3 registros
+		if thread_log_history.size() > 3:
+			thread_log_history.pop_back()
+		
+		# Reconstrói o texto do RichTextLabel juntando o array com quebra de linha
+		# O "\n".join() pega ["A", "B", "C"] e transforma em "A\nB\nC"
+		thread_history_label.text = "\n".join(thread_log_history)
 
 # --- Demais Funções de UI ---
 
