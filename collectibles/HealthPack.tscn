@@ -42,6 +42,7 @@ animations = [{
 }]
 
 [node name="HealthPack" type="Area2D"]
+process_mode = 3
 script = ExtResource("1_gavo1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -49,6 +50,7 @@ shape = SubResource("RectangleShape2D_p5yvm")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_gavo1")
-frame_progress = 0.1899405
+autoplay = "default"
+frame_progress = 0.9692154
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
