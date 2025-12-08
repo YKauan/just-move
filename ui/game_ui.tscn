@@ -95,6 +95,15 @@ offset_bottom = 23.0
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 5
 
+[node name="ThreadLabel" type="Label" parent="."]
+offset_left = 1.0
+offset_top = 10.0
+offset_right = 41.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("2_w46tp")
+theme_override_font_sizes/font_size = 5
+text = "Threads: 0/0"
+
 [node name="UpgradeCardContainer" type="Control" parent="."]
 process_mode = 3
 layout_mode = 3

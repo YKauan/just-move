@@ -4,6 +4,10 @@ extends Node2D
 var nav_grid: NavigationGrid
 var debug_enemy_lines: Array = []
 
+@export_category("Multithreading Configuration")
+@export var use_dynamic_threads: bool = true # Se true, ignora o manual
+@export_range(1, 32) var manual_thread_count: int = 2 # Usado se dynamic for false
+
 @export_category("World Dependencies")
 @export var player_scene: PackedScene
 @onready var game_ui = $GameUI
@@ -36,6 +40,9 @@ var all_possible_events: Array = []
 var current_active_event: Dictionary = {}
 var ai_update_timer: float = 0.0
 
+var final_thread_count: int = 2
+var max_hardware_threads = max(1, OS.get_processor_count() - 2)
+
 var current_wave: int = 0
 var next_event_wave: int = 0
 
@@ -46,6 +53,23 @@ var enemies_alive_in_wave: int = 0
 
 func _ready() -> void:
 	load_upgrades_from_json()
+	
+	if use_dynamic_threads:
+		# OS.get_processor_count() retorna o nº de threads lógicas da CPU do PC.
+		# Subtraímos 1 para deixar uma thread livre para o Jogo Principal/Renderização/OS
+		# max(1, ...) garante que nunca seja 0.
+		final_thread_count = max_hardware_threads
+		print("Configuração Dinâmica: CPU tem ", OS.get_processor_count(), " núcleos. Usando ", final_thread_count, " threads para IA.")
+	else:
+		if manual_thread_count > max_hardware_threads:
+			print("Aviso: Contagem manual (", manual_thread_count, ") excede o hardware seguro. Limitando a ", max_hardware_threads)
+			final_thread_count = max_hardware_threads
+		else:
+			final_thread_count = manual_thread_count
+			print("Modo Manual: Usando ", final_thread_count, " threads.")
+
+	# Inicializa o serviço de IA com o valor calculado
+	enemy_ai_service.initialize_threads(final_thread_count)
 	
 	if enemy_scenes.is_empty() or enemy_scenes.size() != enemy_spawn_weights.size():
 		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e não estarem vazios.")
@@ -82,6 +106,13 @@ func _physics_process(delta):
 		if ai_update_timer >= ai_update_interval:
 			ai_update_timer = 0.0
 			request_ai_update_from_service()
+			
+		if is_instance_valid(game_ui) and is_instance_valid(enemy_ai_service):
+			var busy = enemy_ai_service.get_busy_thread_count()
+			var total = enemy_ai_service.num_threads
+			game_ui.update_thread_label(busy, total)
+			
+		queue_redraw()
 
 func setup_player_connections():
 	if player_instance:

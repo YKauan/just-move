@@ -7,8 +7,13 @@ extends CanvasLayer
 @onready var pause_menu = $PauseMenu
 @onready var event_message_label = $EventMessageLabel
 @onready var fps_counter_label = $FPSCounterLabel
+@onready var thread_label = $ThreadLabel
 
-# Referências ao novo sistema de cards de upgrade
+# Botões do Pause
+@onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
+@onready var main_menu_button = $PauseMenu/VBoxContainer/MainMenuButton
+
+# Referências ao sistema de cards
 @onready var upgrade_card_container = $UpgradeCardContainer
 @onready var upgrade_cards: Array[Node] = [
 	$UpgradeCardContainer/CardHolder/UpgradeCard1,
@@ -16,35 +21,57 @@ extends CanvasLayer
 	$UpgradeCardContainer/CardHolder/UpgradeCard3
 ]
 
-# Variáveis de controle
 var world_manager: Node = null
 var current_upgrades: Array = []
+
+# Variáveis para a lógica de cor
+var previous_fps: float = 0.0
+var previous_busy_threads: int = -1
 
 func _ready() -> void:
 	await get_tree().process_frame
 	world_manager = get_tree().get_first_node_in_group("world_manager")
 	
 	if world_manager == null:
-		printerr("ERROR: World manager not found in 'world_manager' group.")
+		printerr("ERROR: World manager not found.")
 	
 	pause_menu.hide()
 	upgrade_card_container.hide()
 	event_message_label.hide()
 	
-	# Conecta o sinal personalizado 'card_selected' de cada card
+	# Conexão de sinais dos cards
 	for i in range(upgrade_cards.size()):
 		var card = upgrade_cards[i]
 		if card and card.has_signal("card_selected"):
-			print("UI: Conectando sinal 'card_selected' do UpgradeCard ", i)
 			card.card_selected.connect(_on_upgrade_selected.bind(i))
 		else:
-			printerr("ERROR: UpgradeCard %d não é válido ou falta o sinal 'card_selected'." % i)
+			printerr("ERROR: UpgradeCard %d inválido." % i)
 
 func _process(delta: float) -> void:
-	var fps = Performance.get_monitor(Performance.TIME_FPS)
-	fps_counter_label.text = "FPS: " + str(fps)
+	# --- ATUALIZAÇÃO DO FPS ---
+	var current_fps = Performance.get_monitor(Performance.TIME_FPS)
+	fps_counter_label.text = "FPS: " + str(current_fps)
+	
+	if current_fps < previous_fps:
+		fps_counter_label.modulate = Color.RED
+	else:
+		fps_counter_label.modulate = Color.GREEN
+	
+	previous_fps = current_fps
 
-# --- Funções para Atualizar Labels da UI ---
+# --- Atualiza o contador de Threads ---
+func update_thread_label(busy_threads: int, total_threads: int) -> void:
+	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
+	
+	if busy_threads < previous_busy_threads:
+		thread_label.modulate = Color.RED
+	else:
+		thread_label.modulate = Color.GREEN
+		
+	previous_busy_threads = busy_threads
+
+# --- Demais Funções de UI ---
+
 func update_health_label(new_health: int) -> void:
 	health_label.text = "Health: %d" % new_health
 
@@ -54,7 +81,6 @@ func update_stamina_label(current_stamina: int, max_stamina: int) -> void:
 func update_enemy_counter(count: int) -> void:
 	enemy_counter_label.text = "Enemies: %d" % count
 
-# --- Funções para Gerenciamento de Menus e Upgrades ---
 func toggle_pause_menu(is_paused: bool) -> void:
 	pause_menu.visible = is_paused
 
@@ -68,28 +94,20 @@ func show_upgrade_screen(upgrades: Array) -> void:
 			if card and card.has_method("update_card_data"):
 				card.update_card_data(upgrades[i])
 				card.show()
-			else:
-				printerr("ERROR: Cannot update card %d." % i)
-				if card: card.hide()
 		else:
 			if card: card.hide()
 
 func _on_upgrade_selected(index: int) -> void:
-	print("UI: Sinal 'card_selected' recebido do card: ", index)
 	if world_manager and index < current_upgrades.size():
 		var chosen_upgrade = current_upgrades[index]
+		var type = chosen_upgrade.get("type", "")
+		var value = chosen_upgrade.get("value", 0.0)
 		
-		var upgrade_type = chosen_upgrade.get("type", "")
-		var upgrade_value = chosen_upgrade.get("value", 0.0)
-		
-		if upgrade_type != "":
-			world_manager.apply_player_upgrade(upgrade_type, upgrade_value)
-		else:
-			printerr("ERROR: Tipo de upgrade vazio no índice ", index)
+		if type != "":
+			world_manager.apply_player_upgrade(type, value)
 		
 	upgrade_card_container.hide()
 
-# --- Funções para Mensagens de Evento ---
 func show_event_message(message: String) -> void:
 	event_message_label.text = message
 	event_message_label.show()
@@ -97,10 +115,14 @@ func show_event_message(message: String) -> void:
 func hide_event_message() -> void:
 	event_message_label.hide()
 
+# --- CORREÇÃO AQUI: Funções com nomes padrão do Godot (snake_case) ---
+
+# O Editor do Godot geralmente conecta em funções com letras minúsculas
 func _on_resume_button_pressed() -> void:
 	if world_manager:
 		world_manager.toggle_pause()
 
+# Verifique se o seu botão MainMenu está conectado nesta função ou na com letras maiúsculas
 func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")

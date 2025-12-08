@@ -3,7 +3,7 @@ extends Node
 
 signal ai_calculations_finished(results)
 
-@export var num_threads: int = 2 # Número de threads na pool
+var num_threads: int = 2 # Número de threads na pool
 
 var threads: Array[Thread] = []
 var workers: Array[RefCounted] = []
@@ -14,6 +14,15 @@ var results_from_workers: Array = []
 var workers_to_check: Array = [] # Lista de workers que estão trabalhando
 
 func _ready():
+	print("Enemy AI Service waiting for initialization...")
+
+func initialize_threads(thread_count: int):
+	num_threads = thread_count
+	
+	# Limpa listas caso seja chamado novamente (segurança)
+	threads.clear()
+	workers.clear()
+	
 	# Inicia a thread pool
 	for i in range(num_threads):
 		var worker = preload("res://services/ai/ai_worker.gd").new()
@@ -23,12 +32,16 @@ func _ready():
 		worker.work_semaphore = Semaphore.new()
 		worker.result_semaphore = Semaphore.new()
 		
+		# Se o nav_grid já foi configurado antes, passa para o worker
+		if nav_grid:
+			worker.nav_grid = nav_grid
+		
 		thread.start(Callable(worker, "work_loop"))
 		
 		threads.append(thread)
 		workers.append(worker)
 	
-	print("Enemy AI Service ready with %d threads." % num_threads)
+	print("Enemy AI Service initialized with %d threads." % num_threads)
 
 func setup(_nav_grid: NavigationGrid):
 	nav_grid = _nav_grid
@@ -101,3 +114,7 @@ func request_ai_update(enemies: Array, player_pos: Vector2):
 		worker.input_data = batch
 		worker.mutex.unlock()
 		worker.work_semaphore.post() # Acorda a thread
+
+# Funcao usada na game_ui para ver as threads ocupadas
+func get_busy_thread_count() -> int:
+	return workers_to_check.size()
