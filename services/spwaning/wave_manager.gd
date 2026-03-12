@@ -1,4 +1,3 @@
-# services/spawning/wave_manager.gd
 extends Node
 
 signal wave_calculated(spawn_data)
@@ -9,23 +8,24 @@ var is_calculating: bool = false
 func _ready():
 	thread = Thread.new()
 
-# Função principal chamada pelo World
+# Funao para soliictar o calculo da proxima wave
 func request_next_wave_calculation(wave_data: Dictionary):
 	if is_calculating:
 		return
 		
 	is_calculating = true
-	# Inicia a thread, passando os dados da onda
+	# Inicia a thread passando os dados da onda
 	thread.start(Callable(self, "_calculate_wave_thread").bind(wave_data))
 	
-	# Aguarda a thread terminar de forma assíncrona
+	# Aguarda a thread terminar de forma assincrona
 	var spawn_data = await thread.wait_to_finish()
 	
 	# Emite o sinal com os resultados quando a thread terminar
 	emit_signal("wave_calculated", spawn_data)
 	is_calculating = false
 
-# Esta função é executada na thread secundária
+# Funcao caluca a wave
+# Essa funcao e executada na thread secundaria
 func _calculate_wave_thread(wave_data: Dictionary) -> Array:
 	var current_wave = wave_data.get("current_wave", 1)
 	var initial_enemies = wave_data.get("initial_enemies", 5)
@@ -47,13 +47,10 @@ func _calculate_wave_thread(wave_data: Dictionary) -> Array:
 	if enemy_scenes.is_empty():
 		return []
 
-	# === CÁLCULO (pode ser mais complexo no futuro) ===
 	for i in range(enemies_to_spawn_this_wave):
-		# Simula um pequeno cálculo para justificar a thread
-		# (Opcional, mas bom para testes)
 		# var start_time = Time.get_ticks_usec()
 		# while Time.get_ticks_usec() - start_time < 100:
-		#	pass # Simula 100 microssegundos de trabalho
+		#	pass
 		
 		var enemy_scene = _pick_random_enemy_type(enemy_scenes, enemy_weights)
 		if enemy_scene:
@@ -61,7 +58,7 @@ func _calculate_wave_thread(wave_data: Dictionary) -> Array:
 			
 	return spawn_list
 
-# Função auxiliar para escolher tipo de inimigo
+# Funcao que escolhe o tipo do inimigo
 func _pick_random_enemy_type(scenes: Array, weights: Array) -> PackedScene:
 	var total_weight = 0.0
 	for weight in weights:

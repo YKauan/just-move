@@ -1,11 +1,10 @@
-# world/world.gd
 extends Node2D
 
 var nav_grid: NavigationGrid
 var player_instance: CharacterBody2D
 
 @export_category("Multithreading Configuration")
-@export var use_dynamic_threads: bool = true # Se true, ignora o manual
+@export var use_dynamic_threads: bool = true # Se true ignora o manual
 @export_range(1, 32) var manual_thread_count: int = 2 # Usado se dynamic for false
 
 @export_category("World Dependencies")
@@ -46,24 +45,22 @@ func _ready() -> void:
 	load_upgrades_from_json()
 	
 	if use_dynamic_threads:
-		# OS.get_processor_count() retorna o nº de threads lógicas da CPU do PC.
-		# Subtraímos 1 para deixar uma thread livre para o Jogo Principal/Renderização/OS
-		# max(1, ...) garante que nunca seja 0.
+		# OS.get_processor_count() retorna o numero de threads logicas da CPU
 		final_thread_count = max_hardware_threads
-		print("Configuração Dinâmica: CPU tem ", OS.get_processor_count(), " núcleos. Usando ", final_thread_count, " threads para IA.")
+		print("Configuração Dinamica: CPU tem ", OS.get_processor_count(), " nucleos. Usando ", final_thread_count, " threads para IA.")
 	else:
 		if manual_thread_count > max_hardware_threads:
-			print("Aviso: Contagem manual (", manual_thread_count, ") excede o hardware seguro. Limitando a ", max_hardware_threads)
+			print("Contagem manual (", manual_thread_count, ") passa a quantidade segura limitando a ", max_hardware_threads)
 			final_thread_count = max_hardware_threads
 		else:
 			final_thread_count = manual_thread_count
-			print("Modo Manual: Usando ", final_thread_count, " threads.")
+			print("Modo Manual, usando ", final_thread_count, " threads.")
 
-	# Inicializa o serviço de IA com o valor calculado
+	# Inicializa o serviço de IA
 	enemy_ai_service.initialize_threads(final_thread_count)
 	
 	if enemy_scenes.is_empty() or enemy_scenes.size() != enemy_spawn_weights.size():
-		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e não estarem vazios.")
+		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e nao estarem vazios.")
 		get_tree().quit()
 
 	player_instance = player_scene.instantiate()
@@ -72,11 +69,8 @@ func _ready() -> void:
 	
 	# Inicializa o Grid A*
 	nav_grid = NavigationGrid.new()
-	# Cria um grid de 100x100 células (ajuste conforme o tamanho do seu mapa)
-	# Centralizado no (0,0) ou onde for seu mapa.
-	# Exemplo: Mapa de 3200x3200 pixels (100 células de 32px)
 	var map_rect = Rect2i(-100, -100, 200, 200)
-	nav_grid.setup_grid(map_rect, []) # Passa lista vazia se não tiver paredes ainda
+	nav_grid.setup_grid(map_rect, []) # Passo vazio pois n tenho obstaculos
 	
 	# Passa o grid para o serviço de IA
 	enemy_ai_service.setup(nav_grid)
@@ -91,7 +85,7 @@ func _ready() -> void:
 	start_game()
 
 func _physics_process(delta):
-	# Se o jogo não está pausado, atualiza o timer da IA
+	# Se o jogo nao esta pausado atualizo o timer da IA
 	if not get_tree().paused:
 		ai_update_timer += delta
 		if ai_update_timer >= ai_update_interval:
@@ -143,7 +137,7 @@ func _on_wave_calculated(spawn_data: Array):
 	game_ui.update_enemy_counter(enemies_alive_in_wave)
 	spawn_timer.start(spawn_interval)
 	
-# Spawna um inimigo da lista pré-calculada
+# Spawna um inimigo da lista pre-calculada
 func _on_spawn_timer_timeout():
 	if enemies_spawned_this_wave >= wave_spawn_list.size():
 		spawn_timer.stop()
@@ -157,7 +151,7 @@ func _on_spawn_timer_timeout():
 	
 	enemies_spawned_this_wave += 1
 
-# Pede para o serviço de IA calcular as direções
+# Funcao para que o servico da IA calcule as direcoes
 func request_ai_update_from_service():
 	if not is_instance_valid(player_instance):
 		return
@@ -184,8 +178,8 @@ func _on_ai_calculations_finished(results: Array):
 		var enemy_node = instance_from_id(enemy_id)
 		if is_instance_valid(enemy_node):
 			enemy_node.set_movement_direction(direction)
-			# Adiciona linha de debug (Do inimigo -> Direção calculada)
-			# Salva apenas 1 a cada 10 para não poluir a tela
+			# Adiciona linha de direcao do inimigo
+			# Salva apenas 1 de 10 se n buga a tela
 			if randi() % 10 == 0:
 				debug_enemy_lines.append({
 					"start": enemy_node.global_position,
@@ -221,14 +215,14 @@ func apply_player_upgrade(type: String, value: float):
 		player_instance.apply_upgrade(type, value)
 	
 	get_tree().paused = false
-	start_next_wave() # Inicia a próxima onda
+	start_next_wave() # Inicia a proxima onda
 
-# --- Funções de Carregamento de JSON (sem alteração) ---
+# Funcao que carrega o JSON de upgrades
 func load_upgrades_from_json():
 	var path = "res://data/upgrades/upgrades.json"
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		printerr("ERRO FATAL: Arquivo de upgrades não encontrado em ", path)
+		printerr("ERRO: Arquivo de upgrades nao encontrado em ", path)
 		get_tree().quit()
 		return
 	var content = file.get_as_text()
@@ -237,43 +231,27 @@ func load_upgrades_from_json():
 		var data = json.get_data()
 		if typeof(data) == TYPE_ARRAY:
 			all_possible_upgrades = data
-			print("Upgrades carregados com sucesso do JSON!")
+			print("Upgrades carregados com sucesso do JSON")
 		else:
-			printerr("ERRO FATAL: O arquivo JSON de upgrades não contém um Array na raiz.")
+			printerr("ERRO: O arquivo JSON de upgrades nao contem um Array na raiz.")
 			get_tree().quit()
 	else:
-		printerr("ERRO FATAL: Falha ao parsear o arquivo JSON de upgrades.")
+		printerr("ERRO: Falha ao parsear o arquivo JSON de upgrades")
 		get_tree().quit()
 
-# --- Funções de UI, Input e Outros (sem alteração) ---
 func _unhandled_input(event: InputEvent):
 	if event.is_action_pressed("ui_cancel"):
 		toggle_pause()
 
+# Funcao de pause
 func toggle_pause():
 	is_paused = not is_paused
 	get_tree().paused = is_paused
 	game_ui.toggle_pause_menu(is_paused)
 
-func pick_random_enemy_type() -> PackedScene:
-	# Esta função agora é chamada pela thread do WaveManager,
-	# mas como ela é estática (não depende de 'self' como um Node),
-	# podemos deixá-la aqui para referência, mas o WaveManager
-	# tem sua própria cópia dela.
-	var total_weight = 0.0
-	for weight in enemy_spawn_weights: total_weight += weight
-	if total_weight == 0.0: return null
-	var random_value = randf() * total_weight
-	var current_weight_sum = 0.0
-	for i in range(enemy_scenes.size()):
-		current_weight_sum += enemy_spawn_weights[i]
-		if random_value <= current_weight_sum:
-			return enemy_scenes[i]
-	return null
-
 func get_random_upgrades() -> Array:
 	if all_possible_upgrades.is_empty():
-		printerr("Aviso: Tentando obter upgrades, mas a lista esta vazia.")
+		printerr("Tentando obter upgrades mas a lista esta vazia.")
 		return []
 	all_possible_upgrades.shuffle()
 	return all_possible_upgrades.slice(0, 3)

@@ -69,12 +69,6 @@ func _character_movement() -> void:
 		Input.get_axis("move_up","move_down")
 	)
 	
-	# Aplica evento de inverter controles caso esteja aplicado
-	if input_modifier == "invert_horizontal":
-		_direction.x *= -1
-	elif input_modifier == "invert_vertical":
-		_direction.y *= -1
-	
 	# Se o player nao estiver parado
 	if _direction != Vector2.ZERO:
 		_animation_tree["parameters/Idle/blend_position"] = _direction

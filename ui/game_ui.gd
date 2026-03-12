@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-# Referências aos labels principais da UI
+# Referencias aos labels principais da UI
 @onready var health_label = $HealthLabel
 @onready var stamina_label = $StaminaLabel
 @onready var enemy_counter_label = $EnemyCounterLabel
@@ -10,11 +10,11 @@ extends CanvasLayer
 @onready var thread_label = $ThreadLabel
 @onready var thread_history_label = $ThreadHistoryLabel
 
-# Botões do Pause
+# Botoes do Pause
 @onready var resume_button = $PauseMenu/VBoxContainer/ResumeButton
 @onready var main_menu_button = $PauseMenu/VBoxContainer/MainMenuButton
 
-# Referências ao sistema de cards
+# Referencias ao sistema de cards
 @onready var upgrade_card_container = $UpgradeCardContainer
 @onready var upgrade_cards: Array[Node] = [
 	$UpgradeCardContainer/CardHolder/UpgradeCard1,
@@ -31,7 +31,7 @@ var card_colors: Array[Color] = [
 var world_manager: Node = null
 var current_upgrades: Array = []
 
-# Variáveis para a lógica de cor
+# Variaveis para a logica de cor
 var previous_fps: float = 0.0
 var previous_busy_threads: int = -1
 var thread_log_history: Array = []
@@ -56,7 +56,6 @@ func _ready() -> void:
 			printerr("ERROR: UpgradeCard %d inválido." % i)
 
 func _process(delta: float) -> void:
-	# --- ATUALIZAÇÃO DO FPS ---
 	var current_fps = Performance.get_monitor(Performance.TIME_FPS)
 	fps_counter_label.text = "FPS: " + str(current_fps)
 	
@@ -67,7 +66,6 @@ func _process(delta: float) -> void:
 	
 	previous_fps = current_fps
 
-# --- Atualiza o contador de Threads ---
 func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
 	
@@ -84,18 +82,14 @@ func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	if busy_threads > 0:
 		var log_entry = "[color=#%s]%d/%d[/color]" % [current_color_hex, busy_threads, total_threads]
 		
-		# Adiciona no começo da lista (push_front)
 		thread_log_history.push_front(log_entry)
 		
-		# Mantém apenas os últimos 3 registros
 		if thread_log_history.size() > 3:
 			thread_log_history.pop_back()
 		
 		# Reconstrói o texto do RichTextLabel juntando o array com quebra de linha
 		# O "\n".join() pega ["A", "B", "C"] e transforma em "A\nB\nC"
 		thread_history_label.text = "\n".join(thread_log_history)
-
-# --- Demais Funções de UI ---
 
 func update_health_label(new_health: int) -> void:
 	health_label.text = "Health: %d" % new_health
@@ -143,14 +137,10 @@ func show_event_message(message: String) -> void:
 func hide_event_message() -> void:
 	event_message_label.hide()
 
-# --- CORREÇÃO AQUI: Funções com nomes padrão do Godot (snake_case) ---
-
-# O Editor do Godot geralmente conecta em funções com letras minúsculas
 func _on_resume_button_pressed() -> void:
 	if world_manager:
 		world_manager.toggle_pause()
 
-# Verifique se o seu botão MainMenu está conectado nesta função ou na com letras maiúsculas
 func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")

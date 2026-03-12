@@ -1,4 +1,3 @@
-# enemies/enemy.gd
 extends CharacterBody2D
 
 var _state_machine
@@ -24,9 +23,8 @@ var is_dying: bool = false
 var can_attack: bool = true
 var _is_attacking: bool = false
 
-# A direção é definida pelo EnemyAIService
+# A direcao e definida pelo EnemyAIService
 var movement_direction: Vector2 = Vector2.ZERO
-
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -35,7 +33,6 @@ func _ready() -> void:
 		_state_machine = _animation_tree["parameters/playback"]
 	else:
 		printerr("Erro: _animation_tree nao foi configurada no inimigo!")
-	
 
 func _physics_process(_delta: float) -> void:
 	if is_dying:
@@ -44,18 +41,17 @@ func _physics_process(_delta: float) -> void:
 		move_and_slide()
 		return
 
-	# O inimigo não pensa mais. Ele apenas executa as ordens de movimento.
 	_enemy_movement()
 	_enemy_attack_logic()
 	_animate()
 	
 	move_and_slide()
 
-# O movimento agora apenas aplica a direção recebida
+# Funcao para aplicar a movimentacao do inimigo
 func _enemy_movement() -> void:
 	velocity = movement_direction * speed
 	
-	# Usa a direção para a animação
+	# Verifica a direcao para a animacao
 	var blend_direction = movement_direction if movement_direction != Vector2.ZERO else Vector2.DOWN
 	
 	if _animation_tree:
@@ -64,8 +60,7 @@ func _enemy_movement() -> void:
 		_animation_tree["parameters/death/blend_position"] = blend_direction
 		_animation_tree["parameters/attack/blend_position"] = blend_direction
 
-
-# A lógica de ataque por contato permanece
+# Logica para os ataques dos inimigos
 func _enemy_attack_logic() -> void:
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
@@ -81,10 +76,10 @@ func _enemy_attack_logic() -> void:
 			_is_attacking = true
 			get_tree().create_timer(0.3).timeout.connect(func(): _is_attacking = false)
 
+# Funcao para aplicar as animacoes
 func _animate() -> void:
 	if not _state_machine:
 		return
-		
 	if _is_attacking:
 		_state_machine.travel("attack")
 		return
@@ -94,13 +89,11 @@ func _animate() -> void:
 		
 	_state_machine.travel("idle")
 
-# --- FUNÇÃO PRINCIPAL PARA A IA ---
-# Chamada pelo world.gd para dizer ao inimigo para onde ir
+# Funcao que diz a direcao do movimento, e chamada no world.gd
 func set_movement_direction(direction: Vector2):
 	movement_direction = direction
 
-# O resto das funções (take_damage, die, etc.) permanece o mesmo
-
+# Funcao para receber dano
 func take_damage(amount: int):
 	if is_dying or is_invincible_event:
 		return
@@ -109,6 +102,7 @@ func take_damage(amount: int):
 		is_dying = true
 		call_deferred("die")
 
+# Funcao de morte
 func die():
 	emit_signal("died")
 	if _state_machine:
@@ -125,5 +119,6 @@ func die():
 		
 	queue_free()
 
+# Funcao do timer de finalizacao do cooldown de ataque
 func _on_attack_cooldown_timer_timeout():
 	can_attack = true

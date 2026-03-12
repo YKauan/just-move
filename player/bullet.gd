@@ -4,7 +4,7 @@ extends Area2D
 var damage: int = 10
 
 func _process(delta: float) -> void:
-	# Move a bala para frente constantemente.
+	# Move a bala para frente
 	position += transform.x * speed * delta
 
 func _on_body_entered(body: Node) -> void:

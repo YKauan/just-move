@@ -3,7 +3,7 @@ extends Node
 
 signal ai_calculations_finished(results)
 
-var num_threads: int = 2 # Número de threads na pool
+var num_threads: int = 2 # Numero de threads na pool
 
 var threads: Array[Thread] = []
 var workers: Array[RefCounted] = []
@@ -11,15 +11,15 @@ var nav_grid: NavigationGrid
 
 var is_processing: bool = false
 var results_from_workers: Array = []
-var workers_to_check: Array = [] # Lista de workers que estão trabalhando
+var workers_to_check: Array = [] # Lista de workers que estao trabalhando
 
 func _ready():
-	print("Enemy AI Service waiting for initialization...")
+	print("Enemy AI Service aguardando a inicializacao...")
 
 func initialize_threads(thread_count: int):
 	num_threads = thread_count
 	
-	# Limpa listas caso seja chamado novamente (segurança)
+	# Limpa listas caso seja chamado novamente
 	threads.clear()
 	workers.clear()
 	
@@ -32,7 +32,7 @@ func initialize_threads(thread_count: int):
 		worker.work_semaphore = Semaphore.new()
 		worker.result_semaphore = Semaphore.new()
 		
-		# Se o nav_grid já foi configurado antes, passa para o worker
+		# Se o nav_grid ja goi configurado antes passa para o worker
 		if nav_grid:
 			worker.nav_grid = nav_grid
 		
@@ -41,7 +41,7 @@ func initialize_threads(thread_count: int):
 		threads.append(thread)
 		workers.append(worker)
 	
-	print("Enemy AI Service initialized with %d threads." % num_threads)
+	print("Enemy AI Service inicializado com %d threads." % num_threads)
 
 func setup(_nav_grid: NavigationGrid):
 	nav_grid = _nav_grid
@@ -49,26 +49,25 @@ func setup(_nav_grid: NavigationGrid):
 	for worker in workers:
 		worker.nav_grid = nav_grid
 
-# Função _process verifica os resultados sem bloquear o jogo
+# Funcao _process verifica os resultados sem bloquear o jogo
 func _process(_delta):
 	if workers_to_check.is_empty():
 		return
 
 	var still_working = []
 	for worker in workers_to_check:
-		# .try_wait() é não-bloqueante. Tenta pegar o semáforo.
-		# Se conseguir (true), o worker terminou.
+		# STenta pegar o semaforo se conseguir o worker finalizou
 		if worker.result_semaphore.try_wait():
 			worker.mutex.lock()
 			results_from_workers.append_array(worker.output_data)
 			worker.mutex.unlock()
 		else:
-			# O worker ainda está ocupado, verifica no próximo frame
+			# O worker ainda esta ocupado verifica o proximo frame
 			still_working.append(worker)
 	
 	workers_to_check = still_working
 	
-	# Se a lista de verificação está vazia, todos terminaram.
+	# Se vazio todos terminaram
 	if workers_to_check.is_empty():
 		emit_signal("ai_calculations_finished", results_from_workers)
 		is_processing = false
@@ -79,13 +78,13 @@ func _exit_tree():
 		worker.mutex.lock()
 		worker.should_exit = true
 		worker.mutex.unlock()
-		worker.work_semaphore.post() # Acorda a thread para que ela possa sair
+		worker.work_semaphore.post() # Posta a thread para que ela possa sair
 	
 	for thread in threads:
 		thread.wait_to_finish()
-	print("All AI worker threads stopped.")
+	print("Todos AI worker threads pararam.")
 
-# Função chamada pelo World para iniciar o trabalho
+# Funcao chamada pelo World para iniciar o work
 func request_ai_update(enemies: Array, player_pos: Vector2):
 	if is_processing or enemies.is_empty():
 		return

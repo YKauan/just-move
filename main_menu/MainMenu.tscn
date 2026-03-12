@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://clfwysvkn50bn"]
+[gd_scene format=3 uid="uid://clfwysvkn50bn"]
 
 [ext_resource type="Script" uid="uid://s5qpgss38ghf" path="res://main_menu/main_menu.gd" id="1_pcyt4"]
 [ext_resource type="FontFile" uid="uid://cru716ds68uln" path="res://assets/fontes/BrunoAceSCRegular.ttf" id="2_4hec4"]
@@ -10,16 +10,16 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ff7fd"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=250237292]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_pcyt4")
 
-[node name="MainMenu(2)" type="Sprite2D" parent="."]
+[node name="MainMenu(2)" type="Sprite2D" parent="." unique_id=1420366615]
 position = Vector2(160, 89)
 texture = ExtResource("2_ff7fd")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2092099844]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.444723, 0.299043, 0.965016, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=316482774]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -42,14 +42,14 @@ offset_bottom = 152.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="StartButton" type="Button" parent="VBoxContainer"]
+[node name="StartButton" type="Button" parent="VBoxContainer" unique_id=110900014]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_4hec4")
 theme_override_styles/normal = SubResource("StyleBoxFlat_4hec4")
 text = "INICIAR JOGO"
 alignment = 0
 
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
+[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=1353905492]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_4hec4")
 theme_override_styles/normal = SubResource("StyleBoxFlat_ff7fd")
