@@ -55,3 +55,12 @@ func work_loop():
 		result_semaphore.post()
 
 	print("AI Worker thread finalizada.")
+
+# Funcao para processar apenas um inimigo
+func process_single_enemy(data) -> Dictionary:
+	var enemy_pos = data["pos"]
+	var player_pos = data["player_pos"]
+	
+	var dir = (player_pos - enemy_pos).normalized()
+	
+	return {"id": data["id"], "direction": dir}

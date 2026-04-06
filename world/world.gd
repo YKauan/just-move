@@ -3,6 +3,9 @@ extends Node2D
 var nav_grid: NavigationGrid
 var player_instance: CharacterBody2D
 
+@export_category("Benchmark TCC")
+@export var force_single_thread_bench: bool = false
+
 @export_category("Multithreading Configuration")
 @export var use_dynamic_threads: bool = true # Se true ignora o manual
 @export_range(1, 32) var manual_thread_count: int = 2 # Usado se dynamic for false
@@ -44,17 +47,22 @@ var enemies_alive_in_wave: int = 0
 func _ready() -> void:
 	load_upgrades_from_json()
 	
-	if use_dynamic_threads:
-		# OS.get_processor_count() retorna o numero de threads logicas da CPU
-		final_thread_count = max_hardware_threads
-		print("Configuração Dinamica: CPU tem ", OS.get_processor_count(), " nucleos. Usando ", final_thread_count, " threads para IA.")
+	# Configuração de Benchmark / Multithreading
+	if force_single_thread_bench:
+		final_thread_count = 0
+		enemy_ai_service.benchmark_mode = true
+		wave_manager.benchmark_mode = true
+		print("MODO BENCHMARK ATIVADO: EXECUTANDO EM SINGLE-THREAD")
 	else:
-		if manual_thread_count > max_hardware_threads:
-			print("Contagem manual (", manual_thread_count, ") passa a quantidade segura limitando a ", max_hardware_threads)
+		if use_dynamic_threads:
 			final_thread_count = max_hardware_threads
+			print("Configuração Dinâmica: Usando ", final_thread_count, " threads.")
 		else:
-			final_thread_count = manual_thread_count
-			print("Modo Manual, usando ", final_thread_count, " threads.")
+			final_thread_count = clampi(manual_thread_count, 1, max_hardware_threads)
+			print("Modo Manual: Usando ", final_thread_count, " threads.")
+		
+		enemy_ai_service.benchmark_mode = false
+		wave_manager.benchmark_mode = false
 
 	# Inicializa o serviço de IA
 	enemy_ai_service.initialize_threads(final_thread_count)
@@ -85,7 +93,6 @@ func _ready() -> void:
 	start_game()
 
 func _physics_process(delta):
-	# Se o jogo nao esta pausado atualizo o timer da IA
 	if not get_tree().paused:
 		ai_update_timer += delta
 		if ai_update_timer >= ai_update_interval:
@@ -93,10 +100,11 @@ func _physics_process(delta):
 			request_ai_update_from_service()
 			
 		if is_instance_valid(game_ui) and is_instance_valid(enemy_ai_service):
+			# No modo benchmark, busy sempre será 0 ou total dependendo da lógica
 			var busy = enemy_ai_service.get_busy_thread_count()
 			var total = enemy_ai_service.num_threads
 			game_ui.update_thread_label(busy, total)
-			
+					
 		queue_redraw()
 
 func setup_player_connections():

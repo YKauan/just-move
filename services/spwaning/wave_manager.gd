@@ -1,3 +1,4 @@
+# services/wave/wave_manager.gd
 extends Node
 
 signal wave_calculated(spawn_data)
@@ -5,28 +6,39 @@ signal wave_calculated(spawn_data)
 var thread: Thread
 var is_calculating: bool = false
 
+@export_category("Benchmark TCC")
+@export var benchmark_mode: bool = false 
+
 func _ready():
 	thread = Thread.new()
 
-# Funao para soliictar o calculo da proxima wave
+# Funcao para calcular a proxima wave
 func request_next_wave_calculation(wave_data: Dictionary):
 	if is_calculating:
 		return
 		
 	is_calculating = true
-	# Inicia a thread passando os dados da onda
-	thread.start(Callable(self, "_calculate_wave_thread").bind(wave_data))
-	
-	# Aguarda a thread terminar de forma assincrona
-	var spawn_data = await thread.wait_to_finish()
-	
-	# Emite o sinal com os resultados quando a thread terminar
+
+	if benchmark_mode:
+		var spawn_data = _perform_wave_calculation_logic(wave_data)
+		_finalize_calculation(spawn_data)
+	else:
+		
+		thread.start(Callable(self, "_run_in_thread").bind(wave_data))
+		var spawn_data = await thread.wait_to_finish()
+		_finalize_calculation(spawn_data)
+
+# funcao executada ao finalizar o calculo da wave
+func _finalize_calculation(spawn_data: Array):
 	emit_signal("wave_calculated", spawn_data)
 	is_calculating = false
 
-# Funcao caluca a wave
-# Essa funcao e executada na thread secundaria
-func _calculate_wave_thread(wave_data: Dictionary) -> Array:
+# Wrapper para a Thread
+func _run_in_thread(wave_data: Dictionary) -> Array:
+	return _perform_wave_calculation_logic(wave_data)
+
+# Roda em thread unica
+func _perform_wave_calculation_logic(wave_data: Dictionary) -> Array:
 	var current_wave = wave_data.get("current_wave", 1)
 	var initial_enemies = wave_data.get("initial_enemies", 5)
 	var increase_min = wave_data.get("increase_min", 3)
@@ -48,10 +60,6 @@ func _calculate_wave_thread(wave_data: Dictionary) -> Array:
 		return []
 
 	for i in range(enemies_to_spawn_this_wave):
-		# var start_time = Time.get_ticks_usec()
-		# while Time.get_ticks_usec() - start_time < 100:
-		#	pass
-		
 		var enemy_scene = _pick_random_enemy_type(enemy_scenes, enemy_weights)
 		if enemy_scene:
 			spawn_list.append({"scene": enemy_scene})

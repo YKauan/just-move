@@ -2,6 +2,8 @@
 extends Node
 
 signal ai_calculations_finished(results)
+@export_category("Benchmark TCC")
+@export var benchmark_mode: bool = false
 
 var num_threads: int = 2 # Numero de threads na pool
 
@@ -89,6 +91,16 @@ func request_ai_update(enemies: Array, player_pos: Vector2):
 	if is_processing or enemies.is_empty():
 		return
 
+	if benchmark_mode:
+		_run_single_thread_benchmark(enemies, player_pos)
+	else:
+		_run_multithread_processing(enemies, player_pos)
+
+# Funcao a executar em multi thread
+func _run_multithread_processing(enemies: Array, player_pos: Vector2):
+	if is_processing or enemies.is_empty():
+		return
+
 	is_processing = true
 	results_from_workers.clear()
 	workers_to_check.clear()
@@ -113,6 +125,27 @@ func request_ai_update(enemies: Array, player_pos: Vector2):
 		worker.input_data = batch
 		worker.mutex.unlock()
 		worker.work_semaphore.post() # Acorda a thread
+
+# Funcao para executar em thread unica
+func _run_single_thread_benchmark(enemies: Array, player_pos: Vector2):
+	is_processing = true
+	var sync_results = []
+	var logic_provider
+	
+	if not workers.is_empty():
+		logic_provider = workers[0]
+	else:
+		# Cria uma instancia apenas para usar a funcao process_single_enemy
+		logic_provider = preload("res://services/ai/ai_worker.gd").new()
+		logic_provider.nav_grid = nav_grid 
+	
+	for enemy in enemies:
+		enemy["player_pos"] = player_pos
+		sync_results.append(logic_provider.process_single_enemy(enemy))
+	
+	# Emite o sinal imediatamente no mesmo frame
+	ai_calculations_finished.emit(sync_results)
+	is_processing = false
 
 # Funcao usada na game_ui para ver as threads ocupadas
 func get_busy_thread_count() -> int:
