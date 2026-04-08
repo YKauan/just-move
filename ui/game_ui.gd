@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var pause_menu = $PauseMenu
 @onready var event_message_label = $EventMessageLabel
 @onready var fps_counter_label = $FPSCounterLabel
+@onready var fps_frame_time = $FrameTimeLabel
 @onready var thread_label = $ThreadLabel
 @onready var thread_history_label = $ThreadHistoryLabel
 
@@ -32,6 +33,7 @@ var world_manager: Node = null
 var current_upgrades: Array = []
 
 # Variaveis para a logica de cor
+var previous_ft: float = 0.0
 var previous_fps: float = 0.0
 var previous_busy_threads: int = -1
 var thread_log_history: Array = []
@@ -59,12 +61,24 @@ func _process(delta: float) -> void:
 	var current_fps = Performance.get_monitor(Performance.TIME_FPS)
 	fps_counter_label.text = "FPS: " + str(current_fps)
 	
+	var frame_time_s = Performance.get_monitor(Performance.TIME_PROCESS)
+	var frame_time_ms = frame_time_s * 1000.0
+	
+	fps_frame_time.text = "Frame Time: " + str(frame_time_ms)
+	fps_frame_time.modulate = Color.GREEN
+	
 	if current_fps < previous_fps:
 		fps_counter_label.modulate = Color.RED
 	else:
 		fps_counter_label.modulate = Color.GREEN
+		
+	if frame_time_ms < previous_ft:
+		fps_frame_time.modulate = Color.RED
+	else:
+		fps_frame_time.modulate = Color.GREEN
 	
 	previous_fps = current_fps
+	previous_ft = frame_time_ms
 
 func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
@@ -87,9 +101,10 @@ func update_thread_label(busy_threads: int, total_threads: int) -> void:
 		if thread_log_history.size() > 3:
 			thread_log_history.pop_back()
 		
-		# Reconstrói o texto do RichTextLabel juntando o array com quebra de linha
-		# O "\n".join() pega ["A", "B", "C"] e transforma em "A\nB\nC"
 		thread_history_label.text = "\n".join(thread_log_history)
+	
+	if total_threads == 0:
+		thread_label.modulate = Color.YELLOW
 
 func update_health_label(new_health: int) -> void:
 	health_label.text = "Health: %d" % new_health

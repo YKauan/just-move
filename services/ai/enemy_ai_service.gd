@@ -11,7 +11,7 @@ var threads: Array[Thread] = []
 var workers: Array[RefCounted] = []
 var nav_grid: NavigationGrid	
 
-var is_processing: bool = false
+var is_process: bool = false
 var results_from_workers: Array = []
 var workers_to_check: Array = [] # Lista de workers que estao trabalhando
 
@@ -72,7 +72,7 @@ func _process(_delta):
 	# Se vazio todos terminaram
 	if workers_to_check.is_empty():
 		emit_signal("ai_calculations_finished", results_from_workers)
-		is_processing = false
+		is_process = false
 
 # Garante que as threads fechem de forma segura
 func _exit_tree():
@@ -88,7 +88,7 @@ func _exit_tree():
 
 # Funcao chamada pelo World para iniciar o work
 func request_ai_update(enemies: Array, player_pos: Vector2):
-	if is_processing or enemies.is_empty():
+	if is_process or enemies.is_empty():
 		return
 
 	if benchmark_mode:
@@ -98,10 +98,10 @@ func request_ai_update(enemies: Array, player_pos: Vector2):
 
 # Funcao a executar em multi thread
 func _run_multithread_processing(enemies: Array, player_pos: Vector2):
-	if is_processing or enemies.is_empty():
+	if is_process or enemies.is_empty():
 		return
 
-	is_processing = true
+	is_process = true
 	results_from_workers.clear()
 	workers_to_check.clear()
 	
@@ -128,7 +128,7 @@ func _run_multithread_processing(enemies: Array, player_pos: Vector2):
 
 # Funcao para executar em thread unica
 func _run_single_thread_benchmark(enemies: Array, player_pos: Vector2):
-	is_processing = true
+	is_process = true
 	var sync_results = []
 	var logic_provider
 	
@@ -145,7 +145,7 @@ func _run_single_thread_benchmark(enemies: Array, player_pos: Vector2):
 	
 	# Emite o sinal imediatamente no mesmo frame
 	ai_calculations_finished.emit(sync_results)
-	is_processing = false
+	is_process = false
 
 # Funcao usada na game_ui para ver as threads ocupadas
 func get_busy_thread_count() -> int:

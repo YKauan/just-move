@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://b3awkhhipfn4c"]
+[gd_scene format=3 uid="uid://b3awkhhipfn4c"]
 
 [ext_resource type="Script" uid="uid://qagqdts4ggad" path="res://ui/game_ui.gd" id="1_dcmab"]
 [ext_resource type="FontFile" uid="uid://cru716ds68uln" path="res://assets/fontes/BrunoAceSCRegular.ttf" id="2_w46tp"]
@@ -13,11 +13,11 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3vkek"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[node name="GameUI" type="CanvasLayer"]
+[node name="GameUI" type="CanvasLayer" unique_id=230575803]
 process_mode = 3
 script = ExtResource("1_dcmab")
 
-[node name="HealthLabel" type="Label" parent="."]
+[node name="HealthLabel" type="Label" parent="." unique_id=95153747]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -29,7 +29,7 @@ grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 10
 
-[node name="StaminaLabel" type="Label" parent="."]
+[node name="StaminaLabel" type="Label" parent="." unique_id=1910475502]
 offset_left = 1.0
 offset_top = 143.0
 offset_right = 87.0
@@ -37,7 +37,7 @@ offset_bottom = 166.0
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 10
 
-[node name="EnemyCounterLabel" type="Label" parent="."]
+[node name="EnemyCounterLabel" type="Label" parent="." unique_id=68540540]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -47,7 +47,7 @@ offset_bottom = 23.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 
-[node name="PauseMenu" type="Panel" parent="."]
+[node name="PauseMenu" type="Panel" parent="." unique_id=254215942]
 process_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -62,14 +62,14 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_7hrjk")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu" unique_id=572165779]
 layout_mode = 0
 offset_left = -135.0
 offset_right = -8.0
 offset_bottom = 66.0
 mouse_filter = 2
 
-[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
+[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=484227505]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 14
@@ -77,7 +77,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_pylni")
 text = "Retornar"
 alignment = 0
 
-[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
+[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=1775268035]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 14
@@ -85,18 +85,29 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_3vkek")
 text = "Voltar ao Menu"
 alignment = 0
 
-[node name="EventMessageLabel" type="Label" parent="."]
+[node name="EventMessageLabel" type="Label" parent="." unique_id=366115506]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="FPSCounterLabel" type="Label" parent="."]
-offset_left = 1.0
-offset_right = 41.0
+[node name="FPSCounterLabel" type="Label" parent="." unique_id=475948996]
+offset_right = 40.0
 offset_bottom = 23.0
 theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 5
 
-[node name="ThreadLabel" type="Label" parent="."]
+[node name="FrameTimeLabel" type="Label" parent="." unique_id=1743827287]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -34.0
+offset_right = 40.0
+offset_bottom = -11.0
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 5
+
+[node name="ThreadLabel" type="Label" parent="." unique_id=2086516000]
 offset_left = 1.0
 offset_top = 10.0
 offset_right = 41.0
@@ -105,7 +116,7 @@ theme_override_fonts/font = ExtResource("2_w46tp")
 theme_override_font_sizes/font_size = 5
 text = "Threads: 0/0"
 
-[node name="ThreadHistoryLabel" type="RichTextLabel" parent="."]
+[node name="ThreadHistoryLabel" type="RichTextLabel" parent="." unique_id=1448637577]
 offset_left = 2.0
 offset_top = 18.0
 offset_right = 42.0
@@ -115,7 +126,7 @@ bbcode_enabled = true
 text = "Threads: 0/0"
 fit_content = true
 
-[node name="UpgradeCardContainer" type="Control" parent="."]
+[node name="UpgradeCardContainer" type="Control" parent="." unique_id=495472264]
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -123,9 +134,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+pivot_offset = Vector2(0, 1)
 mouse_filter = 2
 
-[node name="CardHolder" type="HBoxContainer" parent="UpgradeCardContainer"]
+[node name="CardHolder" type="HBoxContainer" parent="UpgradeCardContainer" unique_id=1722096550]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -142,13 +154,13 @@ mouse_filter = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="UpgradeCard1" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+[node name="UpgradeCard1" parent="UpgradeCardContainer/CardHolder" unique_id=934076283 instance=ExtResource("3_7hrjk")]
 layout_mode = 2
 
-[node name="UpgradeCard2" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+[node name="UpgradeCard2" parent="UpgradeCardContainer/CardHolder" unique_id=413409638 instance=ExtResource("3_7hrjk")]
 layout_mode = 2
 
-[node name="UpgradeCard3" parent="UpgradeCardContainer/CardHolder" instance=ExtResource("3_7hrjk")]
+[node name="UpgradeCard3" parent="UpgradeCardContainer/CardHolder" unique_id=1261800199 instance=ExtResource("3_7hrjk")]
 layout_mode = 2
 
 [connection signal="pressed" from="PauseMenu/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
