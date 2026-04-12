@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://bctbgfd13rw4t"]
+[gd_scene format=3 uid="uid://bctbgfd13rw4t"]
 
 [ext_resource type="Script" uid="uid://mnosotewq0r8" path="res://player/player.gd" id="1_ulp21"]
 [ext_resource type="Texture2D" uid="uid://cfbbpd1ett516" path="res://assets/player/player2.png" id="2_3c3w1"]
@@ -824,63 +824,62 @@ states/Walk/node = SubResource("AnimationNodeBlendSpace2D_3c3w1")
 states/Walk/position = Vector2(359.542, 190)
 graph_offset = Vector2(-27.4582, 59.527058)
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("_attack_time", "_animation_tree")]
+[node name="Player" type="CharacterBody2D" unique_id=1658221994 node_paths=PackedStringArray("_attack_time", "_animation_tree")]
 collision_mask = 2
 script = ExtResource("1_ulp21")
+max_health = 2000000.0
 _attack_time = NodePath("MeleeAttackTimer")
 _animation_tree = NodePath("AnimationTree")
 
-[node name="GunPivot" type="Node2D" parent="."]
+[node name="GunPivot" type="Node2D" parent="." unique_id=2067823761]
 position = Vector2(0.5, -0.5)
 
-[node name="FireRateTimer" type="Timer" parent="."]
+[node name="FireRateTimer" type="Timer" parent="." unique_id=2107735149]
 one_shot = true
 
-[node name="DashTimer" type="Timer" parent="."]
+[node name="DashTimer" type="Timer" parent="." unique_id=1860311398]
 one_shot = true
 
-[node name="OutOfCombatTimer" type="Timer" parent="."]
+[node name="OutOfCombatTimer" type="Timer" parent="." unique_id=1394576554]
 one_shot = true
 
-[node name="MeleeHitbox" type="Area2D" parent="."]
+[node name="MeleeHitbox" type="Area2D" parent="." unique_id=624034833]
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox" unique_id=1035843547]
 position = Vector2(0, 12)
 shape = SubResource("RectangleShape2D_ulp21")
 disabled = true
 
-[node name="Texture" type="Sprite2D" parent="."]
+[node name="Texture" type="Sprite2D" parent="." unique_id=81803477]
 position = Vector2(-0.5, -17)
 scale = Vector2(1.085, 1)
 texture = ExtResource("2_3c3w1")
 hframes = 6
 vframes = 10
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=154858371]
 show_behind_parent = true
 position = Vector2(3.70248e-07, -1.5)
 rotation = -3.14159
 scale = Vector2(0.53663, -0.0115105)
 shape = SubResource("RectangleShape2D_3c3w1")
 
-[node name="Animation" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_83hs8")
-}
+[node name="Animation" type="AnimationPlayer" parent="." unique_id=1637970405]
+libraries/ = SubResource("AnimationLibrary_83hs8")
 
-[node name="AnimationTree" type="AnimationTree" parent="."]
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=320762767]
 tree_root = SubResource("AnimationNodeStateMachine_3c3w1")
 anim_player = NodePath("../Animation")
 parameters/Attack/blend_position = Vector2(0, 0)
 parameters/Idle/blend_position = Vector2(0, 0)
 parameters/Walk/blend_position = Vector2(0, 0)
 
-[node name="MeleeAttackTimer" type="Timer" parent="."]
+[node name="MeleeAttackTimer" type="Timer" parent="." unique_id=1511079019]
 wait_time = 0.4
 one_shot = true
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=281435288]
 zoom = Vector2(0.7, 0.7)
 position_smoothing_enabled = true
 

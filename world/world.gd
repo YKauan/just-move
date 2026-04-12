@@ -29,6 +29,7 @@ var player_instance: CharacterBody2D
 @export var enemy_increase_max: int = 7
 @export var spawn_interval: float = 1.0
 @export var ai_update_interval: float = 0.2
+@export var batch_size: int = 5
 
 var is_paused: bool = false
 var all_possible_upgrades: Array = []
@@ -147,9 +148,19 @@ func _on_wave_calculated(spawn_data: Array):
 	
 # Spawna um inimigo da lista pre-calculada
 func _on_spawn_timer_timeout():
-	if enemies_spawned_this_wave >= wave_spawn_list.size():
-		spawn_timer.stop()
-		return
+	# Loop para processar o lote definido
+	for i in range(batch_size):
+		if enemies_spawned_this_wave >= wave_spawn_list.size():
+			spawn_timer.stop()
+			return
+			
+		var spawn_info = wave_spawn_list[enemies_spawned_this_wave]
+		var enemy = spawn_info["scene"].instantiate()
+		enemy.global_position = get_random_spawn_position()
+		enemy.died.connect(_on_enemy_died)
+		add_child(enemy)
+
+		enemies_spawned_this_wave += 1
 		
 	var spawn_info = wave_spawn_list[enemies_spawned_this_wave]
 	var enemy = spawn_info["scene"].instantiate()

@@ -23,6 +23,11 @@ extends CanvasLayer
 	$UpgradeCardContainer/CardHolder/UpgradeCard3
 ]
 
+var log_file_path: String = ""
+var log_interval: float = 0.5 
+var log_timer: float = 0.0
+var is_logging: bool = true
+
 var card_colors: Array[Color] = [
 	Color("#5c9aff"), # Azul
 	Color("#bd73ff"), # Roxo
@@ -56,6 +61,9 @@ func _ready() -> void:
 			card.card_selected.connect(_on_upgrade_selected.bind(i))
 		else:
 			printerr("ERROR: UpgradeCard %d inválido." % i)
+	
+	if is_logging and world_manager:
+		setup_benchmark_file()
 
 func _process(delta: float) -> void:
 	var current_fps = Performance.get_monitor(Performance.TIME_FPS)
@@ -79,6 +87,12 @@ func _process(delta: float) -> void:
 	
 	previous_fps = current_fps
 	previous_ft = frame_time_ms
+	
+	if is_logging and log_file_path != "":
+		log_timer += delta
+		if log_timer >= log_interval:
+			log_timer = 0.0
+			save_to_csv()
 
 func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
@@ -159,3 +173,58 @@ func _on_resume_button_pressed() -> void:
 func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
+
+func setup_benchmark_file():
+	var is_single = world_manager.force_single_thread_bench
+	var mode_folder = "single" if is_single else "multi"
+	
+	# 1. Caminho relativo (funciona dentro da engine)
+	var relative_dir = "res://benchmarks/" + mode_folder + "/"
+	
+	# 2. Caminho Absoluto (O Godot ajusta as barras / ou \ automaticamente)
+	var absolute_dir = ProjectSettings.globalize_path(relative_dir)
+	
+	# 3. Cria as pastas no sistema operacional
+	var err = DirAccess.make_dir_recursive_absolute(absolute_dir)
+	
+	if err != OK:
+		printerr("ERRO: Falha ao criar pastas no SO (", OS.get_name(), "): ", err)
+		return
+
+	# 4. Gera o Timestamp para o nome do arquivo
+	var time_dict = Time.get_datetime_dict_from_system()
+	var time_stamp = "%d_%02d_%02d_%02d%02d" % [
+		time_dict.year, time_dict.month, time_dict.day, 
+		time_dict.hour, time_dict.minute
+	]
+	
+	var mode_name = "single" if is_single else "multi"
+	var file_name = "benchmark_results_" + mode_name + "_" + time_stamp + ".csv"
+	
+	# 5. Define o caminho final do arquivo
+	log_file_path = absolute_dir + file_name
+	
+	# Prints para depuração no console do Editor
+	print("Sistema Operacional: ", OS.get_name())
+	print("Local do Arquivo: ", log_file_path)
+	
+	var file = FileAccess.open(log_file_path, FileAccess.WRITE)
+	if file:
+		file.store_line("Timestamp_ms,Mode,FPS,FrameTime_ms,Entities")
+		file.close()
+	else:
+		printerr("erro ao criar o arquivo.")
+		
+func save_to_csv():
+	var file = FileAccess.open(log_file_path, FileAccess.READ_WRITE)
+	if file:
+		file.seek_end()
+		var timestamp = Time.get_ticks_msec()
+		var mode = "Single" if world_manager.force_single_thread_bench else "Multi"
+		var fps = Performance.get_monitor(Performance.TIME_FPS)
+		var ft = Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+		var entities = get_tree().get_nodes_in_group("enemy").size()
+		
+		var line = "%d,%s,%.2f,%.4f,%d" % [timestamp, mode, fps, ft, entities]
+		file.store_line(line)
+		file.close()
