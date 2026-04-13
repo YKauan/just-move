@@ -1,6 +1,5 @@
 extends Node2D
 
-var nav_grid: NavigationGrid
 var player_instance: CharacterBody2D
 
 @export_category("Benchmark TCC")
@@ -75,14 +74,6 @@ func _ready() -> void:
 	player_instance = player_scene.instantiate()
 	player_instance.global_position = Vector2(100, 100)
 	add_child(player_instance)
-	
-	# Inicializa o Grid A*
-	nav_grid = NavigationGrid.new()
-	var map_rect = Rect2i(-100, -100, 200, 200)
-	nav_grid.setup_grid(map_rect, []) # Passo vazio pois n tenho obstaculos
-	
-	# Passa o grid para o serviço de IA
-	enemy_ai_service.setup(nav_grid)
 
 	setup_player_connections()
 	add_to_group("world_manager")
@@ -161,14 +152,6 @@ func _on_spawn_timer_timeout():
 		add_child(enemy)
 
 		enemies_spawned_this_wave += 1
-		
-	var spawn_info = wave_spawn_list[enemies_spawned_this_wave]
-	var enemy = spawn_info["scene"].instantiate()
-	enemy.global_position = get_random_spawn_position()
-	enemy.died.connect(_on_enemy_died)
-	add_child(enemy)
-	
-	enemies_spawned_this_wave += 1
 
 # Funcao para que o servico da IA calcule as direcoes
 func request_ai_update_from_service():

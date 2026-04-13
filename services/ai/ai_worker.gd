@@ -1,15 +1,13 @@
 extends RefCounted
 
-var nav_grid: NavigationGrid
-
-# Variaveis de Sincronizacao
+# Removido nav_grid pois usaremos Steering
 var mutex: Mutex
-var work_semaphore: Semaphore  # A thread principal posta para acordar
-var result_semaphore: Semaphore # O worker posta para avisar que terminou
+var work_semaphore: Semaphore 
+var result_semaphore: Semaphore
 
-# Variaveis de Dados
-var input_data: Array = []  # Dados otidos da thread principal
-var output_data: Array = [] # Resultados retornados a thread principal
+var input_data: Array = [] 
+var all_enemy_positions: Array = [] # Nova lista com todos para calcular separação
+var output_data: Array = [] 
 var should_exit: bool = false
 
 func work_loop():
@@ -17,50 +15,47 @@ func work_loop():
 		work_semaphore.wait()
 		
 		mutex.lock()
-		var exit_now = should_exit
-		mutex.unlock()
-		if exit_now: break
-
-		var current_batch = []
-		mutex.lock()
-		current_batch = input_data
+		if should_exit: 
+			mutex.unlock()
+			break
+		
+		var current_batch = input_data
+		var others = all_enemy_positions # Copia local para evitar concorrência
 		input_data = [] 
 		mutex.unlock()
 
 		var results = []
-		if not current_batch.is_empty():
-			for data in current_batch:
-				var enemy_pos = data["pos"]
-				var player_pos = data["player_pos"]
-				
-				var direction = Vector2.ZERO
-				
-				# Se  for usar o A* e o nav_grid estiver ok
-				if nav_grid:
-					direction = nav_grid.get_next_path_position(enemy_pos, player_pos)
-				else:
-					direction = (player_pos - enemy_pos).normalized()
-				
-				# Se por algum milagre ainda for zero forco para movimentar e nao travar
-				if direction == Vector2.ZERO:
-					direction = (player_pos - enemy_pos).normalized()
-
-				results.append({"id": data["id"], "direction": direction})
-				
-				results.append({"id": data["id"], "direction": direction})
+		for data in current_batch:
+			results.append(_calculate_steering(data, others))
 
 		mutex.lock()
 		output_data = results
 		mutex.unlock()
 		result_semaphore.post()
 
-	print("AI Worker thread finalizada.")
-
-# Funcao para processar apenas um inimigo
-func process_single_enemy(data) -> Dictionary:
-	var enemy_pos = data["pos"]
+func _calculate_steering(data: Dictionary, others: Array) -> Dictionary:
+	var pos = data["pos"]
 	var player_pos = data["player_pos"]
+	var radius = 45.0 # Raio de separação (ajuste conforme o tamanho do sprite)
 	
-	var dir = (player_pos - enemy_pos).normalized()
+	# 1. Vetor de Perseguição (Ir para o player)
+	var desired_velocity = (player_pos - pos).normalized()
 	
-	return {"id": data["id"], "direction": dir}
+	# 2. Vetor de Separação (Fugir de outros inimigos)
+	var separation = Vector2.ZERO
+	for other_pos in others:
+		var dist = pos.distance_to(other_pos)
+		if dist > 0 and dist < radius:
+			# Força inversamente proporcional à distância
+			var diff = (pos - other_pos).normalized()
+			separation += diff / dist 
+	
+	# 3. Combinação Final
+	# Aumentamos o peso da separação para a horda se espalhar organicamente
+	var final_direction = (desired_velocity + (separation * 15.0)).normalized()
+	
+	return {"id": data["id"], "direction": final_direction}
+
+# Atualizado para manter compatibilidade com o benchmark single-thread
+func process_single_enemy(data: Dictionary, others: Array) -> Dictionary:
+	return _calculate_steering(data, others)

@@ -20,12 +20,9 @@ func _ready():
 
 func initialize_threads(thread_count: int):
 	num_threads = thread_count
-	
-	# Limpa listas caso seja chamado novamente
 	threads.clear()
 	workers.clear()
 	
-	# Inicia a thread pool
 	for i in range(num_threads):
 		var worker = preload("res://services/ai/ai_worker.gd").new()
 		var thread = Thread.new()
@@ -34,22 +31,11 @@ func initialize_threads(thread_count: int):
 		worker.work_semaphore = Semaphore.new()
 		worker.result_semaphore = Semaphore.new()
 		
-		# Se o nav_grid ja goi configurado antes passa para o worker
-		if nav_grid:
-			worker.nav_grid = nav_grid
-		
 		thread.start(Callable(worker, "work_loop"))
-		
 		threads.append(thread)
 		workers.append(worker)
 	
-	print("Enemy AI Service inicializado com %d threads." % num_threads)
-
-func setup(_nav_grid: NavigationGrid):
-	nav_grid = _nav_grid
-	# Passa o grid para todos os workers existentes
-	for worker in workers:
-		worker.nav_grid = nav_grid
+	print("Enemy AI Service inicializado com %d threads (Modo Steering)." % num_threads)
 
 # Funcao _process verifica os resultados sem bloquear o jogo
 func _process(_delta):
@@ -105,6 +91,11 @@ func _run_multithread_processing(enemies: Array, player_pos: Vector2):
 	results_from_workers.clear()
 	workers_to_check.clear()
 	
+	# Coleta todas as posições uma única vez para passar aos workers
+	var all_positions = []
+	for e in enemies:
+		all_positions.append(e["pos"])
+	
 	var batch_size = int(ceil(float(enemies.size()) / num_threads))
 	
 	for i in range(num_threads):
@@ -112,38 +103,44 @@ func _run_multithread_processing(enemies: Array, player_pos: Vector2):
 		var start_index = i * batch_size
 		var end_index = min(start_index + batch_size, enemies.size())
 		
-		if start_index >= enemies.size():
-			continue 
+		if start_index >= enemies.size(): continue 
 
-		workers_to_check.append(worker)
 		var batch = enemies.slice(start_index, end_index)
-		
-		for j in range(batch.size()):
-			batch[j]["player_pos"] = player_pos
+		for item in batch:
+			item["player_pos"] = player_pos
 			
 		worker.mutex.lock()
 		worker.input_data = batch
+		worker.all_enemy_positions = all_positions # Passa a lista global
 		worker.mutex.unlock()
-		worker.work_semaphore.post() # Acorda a thread
+		
+		workers_to_check.append(worker)
+		worker.work_semaphore.post()
 
 # Funcao para executar em thread unica
 func _run_single_thread_benchmark(enemies: Array, player_pos: Vector2):
 	is_process = true
 	var sync_results = []
-	var logic_provider
 	
+	# 1. Coletar todas as posições (essencial para o cálculo de separação)
+	var all_positions = []
+	for e in enemies:
+		all_positions.append(e["pos"])
+	
+	# 2. Obter o provedor de lógica
+	var logic_provider
 	if not workers.is_empty():
 		logic_provider = workers[0]
 	else:
-		# Cria uma instancia apenas para usar a funcao process_single_enemy
 		logic_provider = preload("res://services/ai/ai_worker.gd").new()
-		logic_provider.nav_grid = nav_grid 
 	
+	# 3. Processar cada inimigo sequencialmente 
 	for enemy in enemies:
 		enemy["player_pos"] = player_pos
-		sync_results.append(logic_provider.process_single_enemy(enemy))
+		# Passamos o inimigo atual E a lista de todos os outros para a separação
+		sync_results.append(logic_provider.process_single_enemy(enemy, all_positions))
 	
-	# Emite o sinal imediatamente no mesmo frame
+	# 4. Finalizar
 	ai_calculations_finished.emit(sync_results)
 	is_process = false
 
