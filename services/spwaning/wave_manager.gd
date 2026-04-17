@@ -23,7 +23,6 @@ func request_next_wave_calculation(wave_data: Dictionary):
 		var spawn_data = _perform_wave_calculation_logic(wave_data)
 		_finalize_calculation(spawn_data)
 	else:
-		
 		thread.start(Callable(self, "_run_in_thread").bind(wave_data))
 		var spawn_data = await thread.wait_to_finish()
 		_finalize_calculation(spawn_data)
@@ -33,7 +32,6 @@ func _finalize_calculation(spawn_data: Array):
 	emit_signal("wave_calculated", spawn_data)
 	is_calculating = false
 
-# Wrapper para a Thread
 func _run_in_thread(wave_data: Dictionary) -> Array:
 	return _perform_wave_calculation_logic(wave_data)
 

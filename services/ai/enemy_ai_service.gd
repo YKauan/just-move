@@ -1,4 +1,3 @@
-# services/ai/enemy_ai_service.gd
 extends Node
 
 signal ai_calculations_finished(results)
@@ -16,8 +15,9 @@ var results_from_workers: Array = []
 var workers_to_check: Array = [] # Lista de workers que estao trabalhando
 
 func _ready():
-	print("Enemy AI Service aguardando a inicializacao...")
+	print("Enemy AI Service aguardando a inicializacao.. .")
 
+# Funcao que inicializa as threads
 func initialize_threads(thread_count: int):
 	num_threads = thread_count
 	threads.clear()
@@ -35,7 +35,7 @@ func initialize_threads(thread_count: int):
 		threads.append(thread)
 		workers.append(worker)
 	
-	print("Enemy AI Service inicializado com %d threads (Modo Steering)." % num_threads)
+	print("Enemy AI Service inicializado com %d threads." % num_threads)
 
 # Funcao _process verifica os resultados sem bloquear o jogo
 func _process(_delta):
@@ -44,7 +44,7 @@ func _process(_delta):
 
 	var still_working = []
 	for worker in workers_to_check:
-		# STenta pegar o semaforo se conseguir o worker finalizou
+		# Tenta pegar o semaforo se conseguir o worker finalizou
 		if worker.result_semaphore.try_wait():
 			worker.mutex.lock()
 			results_from_workers.append_array(worker.output_data)
@@ -66,11 +66,11 @@ func _exit_tree():
 		worker.mutex.lock()
 		worker.should_exit = true
 		worker.mutex.unlock()
-		worker.work_semaphore.post() # Posta a thread para que ela possa sair
+		worker.work_semaphore.post()
 	
 	for thread in threads:
 		thread.wait_to_finish()
-	print("Todos AI worker threads pararam.")
+	print("Todos worker threads pararam.")
 
 # Funcao chamada pelo World para iniciar o work
 func request_ai_update(enemies: Array, player_pos: Vector2):
@@ -91,7 +91,7 @@ func _run_multithread_processing(enemies: Array, player_pos: Vector2):
 	results_from_workers.clear()
 	workers_to_check.clear()
 	
-	# Coleta todas as posições uma única vez para passar aos workers
+	# Coleta todas as posicoes uma unica vez para passar aos workers
 	var all_positions = []
 	for e in enemies:
 		all_positions.append(e["pos"])
@@ -111,7 +111,7 @@ func _run_multithread_processing(enemies: Array, player_pos: Vector2):
 			
 		worker.mutex.lock()
 		worker.input_data = batch
-		worker.all_enemy_positions = all_positions # Passa a lista global
+		worker.all_enemy_positions = all_positions
 		worker.mutex.unlock()
 		
 		workers_to_check.append(worker)
@@ -122,25 +122,23 @@ func _run_single_thread_benchmark(enemies: Array, player_pos: Vector2):
 	is_process = true
 	var sync_results = []
 	
-	# 1. Coletar todas as posições (essencial para o cálculo de separação)
 	var all_positions = []
 	for e in enemies:
 		all_positions.append(e["pos"])
 	
 	# 2. Obter o provedor de lógica
-	var logic_provider
+	var single_worker
 	if not workers.is_empty():
-		logic_provider = workers[0]
+		single_worker = workers[0]
 	else:
-		logic_provider = preload("res://services/ai/ai_worker.gd").new()
+		single_worker = preload("res://services/ai/ai_worker.gd").new()
 	
-	# 3. Processar cada inimigo sequencialmente 
+	# Processa cada inimigo sequencialmente 
 	for enemy in enemies:
 		enemy["player_pos"] = player_pos
-		# Passamos o inimigo atual E a lista de todos os outros para a separação
-		sync_results.append(logic_provider.process_single_enemy(enemy, all_positions))
+		# Passa o inimigo atual e a lista de todos os outros para a separacao
+		sync_results.append(single_worker.process_single_enemy(enemy, all_positions))
 	
-	# 4. Finalizar
 	ai_calculations_finished.emit(sync_results)
 	is_process = false
 

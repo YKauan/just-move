@@ -32,7 +32,7 @@ func _ready() -> void:
 	if _animation_tree:
 		_state_machine = _animation_tree["parameters/playback"]
 	else:
-		printerr("Erro: _animation_tree nao foi configurada no inimigo!")
+		printerr("Erro _animation_tree nao foi configurada no inimigo")
 
 func _physics_process(_delta: float) -> void:
 	if is_dying:
@@ -89,7 +89,7 @@ func _animate() -> void:
 		
 	_state_machine.travel("idle")
 
-# Funcao que diz a direcao do movimento, e chamada no world.gd
+# Funcao que diz a direcao do movimento e chamada no world.gd
 func set_movement_direction(direction: Vector2):
 	movement_direction = direction
 

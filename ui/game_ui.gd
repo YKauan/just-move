@@ -37,7 +37,7 @@ var card_colors: Array[Color] = [
 var world_manager: Node = null
 var current_upgrades: Array = []
 
-# Variaveis para a logica de cor
+# Variaveis para a lofica de cor
 var previous_ft: float = 0.0
 var previous_fps: float = 0.0
 var previous_busy_threads: int = -1
@@ -48,23 +48,24 @@ func _ready() -> void:
 	world_manager = get_tree().get_first_node_in_group("world_manager")
 	
 	if world_manager == null:
-		printerr("ERROR: World manager not found.")
+		printerr("Erro World manager not found.")
 	
 	pause_menu.hide()
 	upgrade_card_container.hide()
 	event_message_label.hide()
 	
-	# Conexão de sinais dos cards
+	# Conexao de sinais dos cards
 	for i in range(upgrade_cards.size()):
 		var card = upgrade_cards[i]
 		if card and card.has_signal("card_selected"):
 			card.card_selected.connect(_on_upgrade_selected.bind(i))
 		else:
-			printerr("ERROR: UpgradeCard %d inválido." % i)
+			printerr("Error UpgradeCard %d invalido." % i)
 	
 	if is_logging and world_manager:
 		setup_benchmark_file()
 
+# funcao padrao de processamento
 func _process(delta: float) -> void:
 	var current_fps = Performance.get_monitor(Performance.TIME_FPS)
 	fps_counter_label.text = "FPS: " + str(current_fps)
@@ -94,6 +95,7 @@ func _process(delta: float) -> void:
 			log_timer = 0.0
 			save_to_csv()
 
+# funcao que atualiza a label de thread
 func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	thread_label.text = "Threads: %d/%d" % [busy_threads, total_threads]
 	
@@ -120,18 +122,23 @@ func update_thread_label(busy_threads: int, total_threads: int) -> void:
 	if total_threads == 0:
 		thread_label.modulate = Color.YELLOW
 
+# funcao que atualiza a label de vida
 func update_health_label(new_health: int) -> void:
 	health_label.text = "Health: %d" % new_health
 
+# funcao que atualiza a label de stamina
 func update_stamina_label(current_stamina: int, max_stamina: int) -> void:
 	stamina_label.text = "Stamina: %d/%d" % [current_stamina, max_stamina]
 
+# funcao que atualiza a label de contador de inimigos
 func update_enemy_counter(count: int) -> void:
 	enemy_counter_label.text = "Enemies: %d" % count
 
+# funcao ao para abrir o menu de pause
 func toggle_pause_menu(is_paused: bool) -> void:
 	pause_menu.visible = is_paused
 
+# funcao que mostra os cards de upgrade
 func show_upgrade_screen(upgrades: Array) -> void:
 	current_upgrades = upgrades
 	upgrade_card_container.show()
@@ -148,6 +155,7 @@ func show_upgrade_screen(upgrades: Array) -> void:
 		else:
 			if card: card.hide()
 
+# funcao que aplica o upgrade
 func _on_upgrade_selected(index: int) -> void:
 	if world_manager and index < current_upgrades.size():
 		var chosen_upgrade = current_upgrades[index]
@@ -159,39 +167,28 @@ func _on_upgrade_selected(index: int) -> void:
 		
 	upgrade_card_container.hide()
 
-func show_event_message(message: String) -> void:
-	event_message_label.text = message
-	event_message_label.show()
-
-func hide_event_message() -> void:
-	event_message_label.hide()
-
+# funcao que despausa o jogo
 func _on_resume_button_pressed() -> void:
 	if world_manager:
 		world_manager.toggle_pause()
 
+# funcao que redireciona ao menu
 func _on_main_menu_button_pressed() -> void:
 	get_tree().paused = false
 	SceneManager.go_to_scene("res://main_menu/MainMenu.tscn")
 
+# funcao que configura o arquivo de benchmark
 func setup_benchmark_file():
 	var is_single = world_manager.force_single_thread_bench
 	var mode_folder = "single" if is_single else "multi"
-	
-	# 1. Caminho relativo (funciona dentro da engine)
 	var relative_dir = "res://benchmarks/" + mode_folder + "/"
-	
-	# 2. Caminho Absoluto (O Godot ajusta as barras / ou \ automaticamente)
-	var absolute_dir = ProjectSettings.globalize_path(relative_dir)
-	
-	# 3. Cria as pastas no sistema operacional
+	var absolute_dir = ProjectSettings.globalize_path(relative_dir)	
 	var err = DirAccess.make_dir_recursive_absolute(absolute_dir)
 	
 	if err != OK:
-		printerr("ERRO: Falha ao criar pastas no SO (", OS.get_name(), "): ", err)
+		printerr("erro, Falha ao criar pastas no (", OS.get_name(), "): ", err)
 		return
 
-	# 4. Gera o Timestamp para o nome do arquivo
 	var time_dict = Time.get_datetime_dict_from_system()
 	var time_stamp = "%d_%02d_%02d_%02d%02d" % [
 		time_dict.year, time_dict.month, time_dict.day, 
@@ -201,10 +198,8 @@ func setup_benchmark_file():
 	var mode_name = "single" if is_single else "multi"
 	var file_name = "benchmark_results_" + mode_name + "_" + time_stamp + ".csv"
 	
-	# 5. Define o caminho final do arquivo
 	log_file_path = absolute_dir + file_name
 	
-	# Prints para depuração no console do Editor
 	print("Sistema Operacional: ", OS.get_name())
 	print("Local do Arquivo: ", log_file_path)
 	
@@ -215,6 +210,7 @@ func setup_benchmark_file():
 	else:
 		printerr("erro ao criar o arquivo.")
 		
+# funcao que salva o log como csv
 func save_to_csv():
 	var file = FileAccess.open(log_file_path, FileAccess.READ_WRITE)
 	if file:

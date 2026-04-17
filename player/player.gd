@@ -27,7 +27,7 @@ var current_stamina: float
 var in_combat: bool = false
 var health_regen_rate: float = 5.0
 
-# Variaveis da arma de fogo
+# Variaveis da arma
 var bullet_scene: PackedScene = preload("res://player/bullet.tscn")
 @onready var fire_rate_timer: Timer = $FireRateTimer
 
@@ -178,14 +178,14 @@ func apply_upgrade(type: String, value: float) -> void:
 	match type:
 		"max_health":
 			max_health += value
-			current_health = min(current_health + value, max_health) # Cura ao aumentar vida máxima
+			current_health = min(current_health + value, max_health)
 			emit_signal("health_updated", current_health)
 		"move_speed":
 			speed += value
 		"stamina_regen":
 			stamina_regen += value
 		_ :
-			printerr("Tipo de upgrade desconhecido: ", type)
+			printerr("Tipo de upgrade desconhecido ", type)
 
 # Funcao que indica se o player esta em combate 
 func _on_out_of_combat_timer_timeout():
@@ -196,7 +196,7 @@ func _on_melee_hitbox_body_entered(body):
 	if body.is_in_group("enemy"):
 		body.take_damage(melee_damage)
 
-# Funcao do timer do melee ataque
+# Funcao do timeout do melee ataque
 func _on_melee_attack_timer_timeout() -> void:
 	set_physics_process(true)
 	_is_attacking = false

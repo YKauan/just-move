@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b64414waj4tkk"
+
+[deps]
+
+files=["res://benchmarks/single/benchmark_results_single_2026_04_13_0747.Mode.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.FPS.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.FrameTime.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.Entities.translation"]
+
+source_file="res://benchmarks/single/benchmark_results_single_2026_04_13_0747.csv"
+dest_files=["res://benchmarks/single/benchmark_results_single_2026_04_13_0747.Mode.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.FPS.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.FrameTime.translation", "res://benchmarks/single/benchmark_results_single_2026_04_13_0747.Entities.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

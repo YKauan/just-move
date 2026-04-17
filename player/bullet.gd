@@ -7,6 +7,7 @@ func _process(delta: float) -> void:
 	# Move a bala para frente
 	position += transform.x * speed * delta
 
+# Funcao executada quando a bala atingir um inimigo
 func _on_body_entered(body: Node) -> void:
 	print("entrou no body da bala")
 	if body.is_in_group("enemy"):

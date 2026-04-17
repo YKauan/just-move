@@ -47,16 +47,16 @@ var enemies_alive_in_wave: int = 0
 func _ready() -> void:
 	load_upgrades_from_json()
 	
-	# Configuração de Benchmark / Multithreading
+	# Configuracao de Benchmark / Multithreading
 	if force_single_thread_bench:
 		final_thread_count = 0
 		enemy_ai_service.benchmark_mode = true
 		wave_manager.benchmark_mode = true
-		print("MODO BENCHMARK ATIVADO: EXECUTANDO EM SINGLE-THREAD")
+		print("MODO BENCHMARK ATIVADO EXECUTANDO EM SINGLE-THREAD")
 	else:
 		if use_dynamic_threads:
 			final_thread_count = max_hardware_threads
-			print("Configuração Dinâmica: Usando ", final_thread_count, " threads.")
+			print("Configuracao Dinamica: Usando ", final_thread_count, " threads.")
 		else:
 			final_thread_count = clampi(manual_thread_count, 1, max_hardware_threads)
 			print("Modo Manual: Usando ", final_thread_count, " threads.")
@@ -68,7 +68,7 @@ func _ready() -> void:
 	enemy_ai_service.initialize_threads(final_thread_count)
 	
 	if enemy_scenes.is_empty() or enemy_scenes.size() != enemy_spawn_weights.size():
-		printerr("Erro: enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e nao estarem vazios.")
+		printerr("Erro enemy_scenes e enemy_spawn_weights devem ter o mesmo tamanho e nao estarem vazios.")
 		get_tree().quit()
 
 	player_instance = player_scene.instantiate()
@@ -92,13 +92,13 @@ func _physics_process(delta):
 			request_ai_update_from_service()
 			
 		if is_instance_valid(game_ui) and is_instance_valid(enemy_ai_service):
-			# No modo benchmark, busy sempre será 0 ou total dependendo da lógica
 			var busy = enemy_ai_service.get_busy_thread_count()
 			var total = enemy_ai_service.num_threads
 			game_ui.update_thread_label(busy, total)
 					
 		queue_redraw()
 
+# configura as conexoes do player
 func setup_player_connections():
 	if player_instance:
 		player_instance.health_updated.connect(game_ui.update_health_label)
@@ -109,9 +109,11 @@ func setup_player_connections():
 
 	player_instance.died.connect(_on_player_died, Node.CONNECT_DEFERRED)
 
+# inicia as waves
 func start_game():
 	start_next_wave()
 
+# funcao que cria as waves
 func start_next_wave():
 	current_wave += 1
 	print("Calculando Onda ", current_wave, "...")
@@ -137,7 +139,7 @@ func _on_wave_calculated(spawn_data: Array):
 	game_ui.update_enemy_counter(enemies_alive_in_wave)
 	spawn_timer.start(spawn_interval)
 	
-# Spawna um inimigo da lista pre-calculada
+# Spawna um inimigo da lista
 func _on_spawn_timer_timeout():
 	# Loop para processar o lote definido
 	for i in range(batch_size):
@@ -171,7 +173,7 @@ func request_ai_update_from_service():
 
 # Chamado quando a thread de IA termina
 func _on_ai_calculations_finished(results: Array):
-	debug_enemy_lines.clear() # Limpa linhas antigas
+	debug_enemy_lines.clear()
 	
 	for result in results:
 		var enemy_id = result["id"]
@@ -206,7 +208,7 @@ func _on_enemy_died() -> void:
 	game_ui.update_enemy_counter(enemies_alive_in_wave)
 	
 	if enemies_alive_in_wave <= 0:
-		print("Onda ", current_wave, " concluída!")
+		print("Onda ", current_wave, " concluida")
 			
 		get_tree().paused = true
 		game_ui.show_upgrade_screen(get_random_upgrades())
@@ -224,7 +226,7 @@ func load_upgrades_from_json():
 	var path = "res://data/upgrades/upgrades.json"
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		printerr("ERRO: Arquivo de upgrades nao encontrado em ", path)
+		printerr("Erro Arquivo de upgrades nao encontrado em ", path)
 		get_tree().quit()
 		return
 	var content = file.get_as_text()
@@ -235,10 +237,10 @@ func load_upgrades_from_json():
 			all_possible_upgrades = data
 			print("Upgrades carregados com sucesso do JSON")
 		else:
-			printerr("ERRO: O arquivo JSON de upgrades nao contem um Array na raiz.")
+			printerr("ERRO O arquivo JSON de upgrades nao contem um Array na raiz.")
 			get_tree().quit()
 	else:
-		printerr("ERRO: Falha ao parsear o arquivo JSON de upgrades")
+		printerr("Erro Falha ao parsear o arquivo JSON de upgrades")
 		get_tree().quit()
 
 func _unhandled_input(event: InputEvent):
